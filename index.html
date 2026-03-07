@@ -1236,6 +1236,18 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     const horario = horarioParts.join(' · ') || 'A definir';
     const folio  = (p.expediente || '').includes('primera') ? 'No tiene folio' : 'Sí tiene folio';
 
+    function getDriveImgUrl(url) {
+      if (!url || url.toString().trim() === '') return null;
+      const s = url.toString().trim();
+      if (s.includes('lh3.googleusercontent.com')) return s;
+      const m1 = s.match(/\/d\/([a-zA-Z0-9_-]{25,})/);
+      if (m1) return 'https://lh3.googleusercontent.com/d/' + m1[1];
+      const m2 = s.match(/[?&]id=([a-zA-Z0-9_-]{25,})/);
+      if (m2) return 'https://lh3.googleusercontent.com/d/' + m2[1];
+      return s.startsWith('http') ? s : null;
+    }
+    const fotoUrl = getDriveImgUrl(p.foto);
+
     const esGratis  = p.estado === 'Sabado';
     const esPremium = p.estado === 'VIP';
     const btnClass  = esPremium ? 'cta-premium' : esGratis ? 'cta-gratis' : 'cta-primary';
@@ -1250,9 +1262,13 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
       ${p.extracciones ? `<div class="sheet-row"><span class="key">Extracciones</span><span class="val">${p.extracciones}</span></div>` : ''}
       <div class="sheet-row"><span class="key">Estado</span><span class="val" style="color:${esPremium ? '#F87171' : esGratis ? '#FCD34D' : '#34D399'}">${p.estado}</span></div>
       <div class="sheet-row"><span class="key">Inversión</span><span class="val" style="color:${esPremium ? '#F87171' : esGratis ? '#FCD34D' : '#34D399'}; font-size:20px; font-family:'Syne',sans-serif;">${precio.monto}</span></div>
-
-
-
+      ${fotoUrl ? `
+      <div style="margin-top:12px;border-radius:12px;overflow:hidden;cursor:pointer;position:relative;" onclick="abrirLightbox('${fotoUrl}')">
+        <img src="${fotoUrl}" alt="Foto del caso" style="width:100%;max-height:220px;object-fit:cover;border-radius:12px;display:block;"
+             onerror="this.parentElement.style.display='none'">
+        <div style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.6);color:white;font-size:11px;padding:4px 8px;border-radius:6px;">🔍 Toca para ampliar</div>
+        <div style="position:absolute;top:8px;left:8px;background:rgba(14,165,233,0.8);color:white;font-size:11px;font-weight:700;padding:4px 8px;border-radius:6px;">📷 Foto del caso</div>
+      </div>` : ''}
       <div class="warning-box" style="margin-top:12px;">
         ${esGratis
           ? '🎁 Prospecto de sábado gratuito. Al tocar el botón se abrirá WhatsApp para confirmar disponibilidad con el operador.'
@@ -1361,6 +1377,19 @@ Quiero apartar el siguiente prospecto de sábado gratuito:
 
   // ── INIT ──
   cargarProspectos();
+  function abrirLightbox(url) {
+    const lb = document.getElementById('lightbox');
+    document.getElementById('lightbox-img').src = url;
+    lb.style.opacity = '1'; lb.style.pointerEvents = 'all';
+  }
+  function cerrarLightbox() {
+    const lb = document.getElementById('lightbox');
+    lb.style.opacity = '0'; lb.style.pointerEvents = 'none';
+    document.getElementById('lightbox-img').src = '';
+  }
 </script>
+  <div id="lightbox" onclick="cerrarLightbox()" style="position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:300;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;">
+    <img id="lightbox-img" src="" style="max-width:95vw;max-height:90vh;border-radius:12px;object-fit:contain;">
+  </div>
 </body>
 </html>

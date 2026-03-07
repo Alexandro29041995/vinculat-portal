@@ -998,14 +998,63 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     </div>
   </div>
 
+  <div class="guion-card">
+    <div class="guion-header" onclick="toggleGuion(this)">
+      <span>💰 El paciente pregunta el costo</span>
+      <span>▾</span>
+    </div>
+    <div class="guion-body">
+      <div class="guion-text">La valoración tiene un costo de $70, y en la misma cita los especialistas de la facultad te explican con detalle qué requiere tu caso y el costo de cada tratamiento. 😊
+
+¿Te gustaría que coordinemos tu cita?</div>
+      <button class="copy-btn" style="width:100%;justify-content:center;" onclick="copiar('La valoración tiene un costo de $70, y en la misma cita los especialistas de la facultad te explican con detalle qué requiere tu caso y el costo de cada tratamiento. 😊
+
+¿Te gustaría que coordinemos tu cita?')">📋 Copiar mensaje</button>
+    </div>
+  </div>
+
+  <div class="guion-card">
+    <div class="guion-header" onclick="toggleGuion(this)">
+      <span>📌 Guía de manejo de prospectos</span>
+      <span>▾</span>
+    </div>
+    <div class="guion-body">
+      <div style="display:flex;flex-direction:column;gap:14px;">
+
+        <div style="background:rgba(37,99,235,0.08);border:1px solid rgba(37,99,235,0.2);border-radius:10px;padding:12px;">
+          <div style="font-size:11px;font-weight:800;color:#60A5FA;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">💰 Confirmación de costos</div>
+          <div style="font-size:13px;color:#CBD5E1;line-height:1.6;">El prospecto ya conoce los precios y está consciente de que los tratamientos tienen costo.</div>
+        </div>
+
+        <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:10px;padding:12px;">
+          <div style="font-size:11px;font-weight:800;color:#34D399;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">🪪 Trámite de cita e INE</div>
+          <div style="font-size:13px;color:#CBD5E1;line-height:1.6;margin-bottom:10px;">Para formalizar la cita, el paciente debe acudir a la facultad con su INE y <strong style="color:white;">$70 MXN</strong> para la valoración.</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:10px;font-size:12px;color:#94A3B8;line-height:1.6;">
+              <strong style="color:#34D399;">Opción A —</strong> Ofrécete a acompañarlo personalmente al trámite.
+            </div>
+            <div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:10px;font-size:12px;color:#94A3B8;line-height:1.6;">
+              <strong style="color:#34D399;">Opción B —</strong> Si prefiere enviarla por mensaje, puede ocultar su dirección; solo es necesario que la foto, el nombre y la fecha de nacimiento sean visibles.
+            </div>
+          </div>
+        </div>
+
+        <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:12px;">
+          <div style="font-size:11px;font-weight:800;color:#FCD34D;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">🔔 Seguimiento y garantía</div>
+          <div style="font-size:13px;color:#CBD5E1;line-height:1.6;">Avisa de inmediato a tu operador cuando el paciente confirme la cita. Si pasan <strong style="color:white;">24 horas</strong> sin respuesta del prospecto, repórtalo para activar tu garantía y que te asignen uno nuevo.</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
   <div style="margin: 0 16px; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); border-radius: 12px; padding: 14px 16px;">
     <div style="font-size:12px; font-weight:700; color:#F87171; margin-bottom:8px;">⚠️ Recordatorios importantes</div>
-    <div style="font-size:12px; color:#94A3B8; line-height:1.7;">
-      • Nunca pidas INE ni datos bancarios al paciente<br>
-      • <strong style="color:#FCD34D;">El paciente NO te paga a ti</strong> — el costo lo cubre la facultad en sus tarifas de clínica, tú solo coordinas la cita<br>
-      • No menciones cuánto pagaste por el prospecto<br>
-      • Endodoncia y casos especiales repórtalos con el operador<br>
-      • Sube evidencia de contacto en 24h
+    <div style="font-size:12px; color:#94A3B8; line-height:1.8;">
+      • <strong style="color:#E2E8F0;">Los prospectos conocen los precios</strong> y saben que deben pagar sus tratamientos<br>
+      • <strong style="color:#E2E8F0;">Para tramitar la cita</strong> coméntale que necesita acudir a la facultad con su INE y $70 para la valoración. Ofrécete a acompañarle a hacer el trámite. Si no puede ir, puede enviarte su INE ocultando datos como dirección — solo deben ser visibles foto, nombre y fecha de nacimiento — para que llegue directo a su cita sin trámite extra<br>
+      • <strong style="color:#FCD34D;">Si identificas endodoncia en diente de enfrente</strong>, comunícalo al operador antes de continuar<br>
+      • <strong style="color:#E2E8F0;">Avisa al operador</strong> cuando el paciente confirme asistencia. Si en las primeras 24h no te responde, repórtalo para hacer válida tu garantía de reposición
     </div>
   </div>
 </div>

@@ -759,6 +759,76 @@
     color: #86EFAC;
   }
 
+
+  /* ── FOTO PROSPECTO ── */
+  .foto-container {
+    width: 100%;
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    position: relative;
+  }
+  .foto-img {
+    width: 100%;
+    max-height: 220px;
+    object-fit: cover;
+    display: block;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .foto-img:active { transform: scale(0.98); }
+  .foto-badge {
+    position: absolute;
+    top: 10px; left: 10px;
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(6px);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 100px;
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  .foto-tap {
+    position: absolute;
+    bottom: 10px; right: 10px;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(6px);
+    color: white;
+    font-size: 10px;
+    padding: 4px 8px;
+    border-radius: 8px;
+  }
+  /* LIGHTBOX */
+  .lightbox {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.95);
+    z-index: 300;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.25s;
+  }
+  .lightbox.show { opacity: 1; pointer-events: all; }
+  .lightbox img {
+    max-width: 95vw;
+    max-height: 90vh;
+    object-fit: contain;
+    border-radius: 12px;
+  }
+  .lightbox-close {
+    position: absolute;
+    top: 16px; right: 16px;
+    width: 36px; height: 36px;
+    background: rgba(255,255,255,0.15);
+    border: none; border-radius: 50%;
+    color: white; font-size: 16px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+
 </style>
 </head>
 <body>
@@ -1292,7 +1362,24 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
 
     document.getElementById('sheet-titulo').textContent = p.id + ' — ' + trat;
 
+    // Convertir link de Google Drive a link directo de imagen
+    function getDriveImgUrl(url) {
+      if (!url) return null;
+      const match = url.match(/[-\w]{25,}/);
+      if (match) return 'https://drive.google.com/thumbnail?id=' + match[0] + '&sz=w800';
+      return url;
+    }
+    const fotoUrl = getDriveImgUrl(p.foto);
+
     document.getElementById('sheet-body').innerHTML = `
+      ${fotoUrl ? `
+      <div class="foto-container">
+        <img class="foto-img" src="${fotoUrl}" alt="Foto del caso"
+             onclick="abrirLightbox('${fotoUrl}')"
+             onerror="this.parentElement.style.display='none'">
+        <div class="foto-badge">📷 Foto del caso</div>
+        <div class="foto-tap">🔍 Toca para ampliar</div>
+      </div>` : ''}
       <div class="sheet-row"><span class="key">Tratamiento</span><span class="val">${trat}</span></div>
       <div class="sheet-row"><span class="key">Horario preferido</span><span class="val">${horario}</span></div>
       <div class="sheet-row"><span class="key">Expediente</span><span class="val">${folio}</span></div>
@@ -1394,8 +1481,26 @@ Quiero apartar el siguiente prospecto de sábado gratuito:
     header.querySelector('span:last-child').textContent = body.classList.contains('open') ? '▴' : '▾';
   }
 
+
+  // ── LIGHTBOX ──
+  function abrirLightbox(url) {
+    document.getElementById('lightbox-img').src = url;
+    document.getElementById('lightbox').classList.add('show');
+  }
+  function cerrarLightbox() {
+    document.getElementById('lightbox').classList.remove('show');
+    document.getElementById('lightbox-img').src = '';
+  }
+
   // ── INIT ──
   cargarProspectos();
 </script>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="cerrarLightbox()">
+  <button class="lightbox-close" onclick="cerrarLightbox()">✕</button>
+  <img id="lightbox-img" src="" alt="Foto del caso">
+</div>
+
 </body>
 </html>

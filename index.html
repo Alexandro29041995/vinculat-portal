@@ -677,6 +677,77 @@
   .precio-row:last-child { border-bottom: none; }
   .precio-row .tipo { color: #94A3B8; }
   .precio-row .monto { font-weight: 700; color: var(--green); font-family: 'Syne', sans-serif; }
+/* ── SOLICITAR MODAL ── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+  z-index: 200; display: flex; align-items: flex-end;
+  justify-content: center; opacity: 0; pointer-events: none;
+  transition: opacity 0.3s;
+}
+.modal-overlay.active { opacity: 1; pointer-events: all; }
+.modal-box {
+  background: #0F1E3A; border-radius: 24px 24px 0 0;
+  padding: 24px 20px 40px; width: 100%; max-width: 480px;
+  transform: translateY(40px); transition: transform 0.3s;
+  border-top: 1px solid #1E3A6E;
+}
+.modal-overlay.active .modal-box { transform: translateY(0); }
+.modal-handle { width: 40px; height: 4px; background: #1E3A6E; border-radius: 2px; margin: 0 auto 20px; }
+.modal-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+.modal-subtitle { font-size: 13px; color: #64748B; margin-bottom: 20px; }
+.modal-input {
+  width: 100%; background: #1A2744; border: 1.5px solid #1E3A6E;
+  border-radius: 12px; padding: 14px 16px; color: #F1F5F9;
+  font-size: 15px; font-family: 'DM Sans', sans-serif; outline: none;
+  margin-bottom: 16px; transition: border-color 0.2s;
+}
+.modal-input:focus { border-color: #2563EB; }
+.modal-input::placeholder { color: #64748B; }
+.btn-solicitar-confirm {
+  width: 100%; padding: 16px; border: none; border-radius: 14px;
+  background: linear-gradient(135deg, #2563EB, #0EA5E9);
+  color: white; font-size: 16px; font-weight: 700;
+  font-family: 'DM Sans', sans-serif; cursor: pointer;
+  transition: opacity 0.2s; display: flex; align-items: center;
+  justify-content: center; gap: 8px;
+}
+.btn-solicitar-confirm:active { opacity: 0.85; }
+.btn-solicitar-confirm:disabled { opacity: 0.5; cursor: not-allowed; }
+/* Payment screen */
+.pago-box {
+  background: #0A1628; border: 1.5px solid #1E3A6E;
+  border-radius: 16px; padding: 18px; margin-bottom: 16px;
+}
+.pago-label { font-size: 11px; color: #64748B; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; font-weight: 600; }
+.pago-value { font-size: 20px; font-weight: 700; color: #F1F5F9; letter-spacing: 1px; }
+.pago-monto { font-size: 32px; font-weight: 800; color: #10B981; font-family: 'Syne', sans-serif; }
+.pago-ref { font-size: 22px; font-weight: 700; color: #F59E0B; letter-spacing: 2px; }
+.copy-btn {
+  background: #1A2744; border: 1px solid #1E3A6E; border-radius: 8px;
+  padding: 6px 12px; color: #60A5FA; font-size: 12px; font-weight: 600;
+  cursor: pointer; font-family: 'DM Sans', sans-serif; margin-top: 8px;
+}
+.upload-zone {
+  border: 2px dashed #1E3A6E; border-radius: 14px; padding: 20px;
+  text-align: center; cursor: pointer; margin-bottom: 16px;
+  transition: border-color 0.2s; background: #0A1628;
+}
+.upload-zone:active { border-color: #2563EB; }
+.upload-zone input[type=file] { display: none; }
+.upload-icon { font-size: 32px; margin-bottom: 8px; }
+.upload-text { font-size: 14px; color: #64748B; }
+.upload-text strong { color: #60A5FA; display: block; margin-bottom: 4px; }
+.upload-preview { max-width: 100%; border-radius: 10px; margin-top: 10px; display: none; }
+.step-indicator {
+  display: flex; gap: 8px; margin-bottom: 20px; align-items: center;
+}
+.step { flex: 1; height: 4px; border-radius: 2px; background: #1E3A6E; }
+.step.active { background: #2563EB; }
+.step.done { background: #10B981; }
+.success-screen { text-align: center; padding: 20px 0; }
+.success-icon { font-size: 56px; margin-bottom: 16px; }
+.success-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+.success-text { font-size: 14px; color: #64748B; line-height: 1.6; }
 </style>
 </head>
 <body>
@@ -741,7 +812,7 @@
     <div style="font-size:10px;font-weight:800;color:#4ade80;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Canal oficial · Vinculat Odonto</div>
     <div style="font-size:17px;font-weight:800;color:white;line-height:1.3;margin-bottom:8px;">Entérate de los pacientes que nos van llegando</div>
     <div style="font-size:13px;color:#86efac;line-height:1.5;margin-bottom:14px;">Publicamos cada nuevo prospecto disponible en tiempo real. Sé el primero en enterarte y adquirirlo antes que otros alumnos. 🦷</div>
-    <a href="https://www.whatsapp.com/channel/0029VbCVD7B0bIdsozNP8L1Y" target="_blank"
+    <a href="https://whatsapp.com/channel/0029VbCVD7B0bIdsozNP8L1Y5gT" target="_blank"
        style="display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:white;font-size:14px;font-weight:800;padding:13px;border-radius:12px;text-decoration:none;">
       📢 Unirme al canal de WhatsApp
     </a>
@@ -1013,6 +1084,10 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
 
   let todosLosProspectos = [];
   let filtroActual = 'todos';
+
+  // ── NUEVAS VARIABLES PARA FLUJO SOLICITAR ──
+  let nombreAlumnoSolicitud = '';
+  let comprobanteB64 = '';
   let prospectoSeleccionado = null;
 
   // ── PRECIO POR TRATAMIENTO ──
@@ -1118,7 +1193,7 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
         </div>
         <div class="card-footer">
           <div class="card-precio ${precio.clase}">${precio.monto}</div>
-          <button class="btn-adquirir ${btnClase}" onclick="event.stopPropagation();abrirSheet(${JSON.stringify(p).replace(/"/g, '&quot;')})">${btnText}</button>
+          <button class="btn-adquirir ${btnClase}" onclick="event.stopPropagation();${p.estado === 'Sabado' ? `abrirWhatsApp('${p.id}')` : `solicitarProspecto(${JSON.stringify(p).replace(/'/g,"\\'")})`}">${btnText}</button>
         </div>
       </div>`;
   }
@@ -1405,9 +1480,198 @@ Quiero apartar el siguiente prospecto de sábado gratuito:
     lb.style.opacity = '0'; lb.style.pointerEvents = 'none';
     document.getElementById('lightbox-img').src = '';
   }
+
+  // ── FLUJO SOLICITAR ──────────────────────────────────────────
+  function solicitarProspecto(p) {
+    prospectoSeleccionado = p;
+    comprobanteB64 = '';
+    document.getElementById('inputNombreAlumno').value = '';
+    document.getElementById('paso1').style.display = 'block';
+    document.getElementById('paso2').style.display = 'none';
+    document.getElementById('paso3').style.display = 'none';
+    document.getElementById('pasoExito').style.display = 'none';
+    const pc = getPrecio(p.tratamiento, p.estado, p.extracciones);
+    document.getElementById('sol-trat-label').textContent =
+      `${getIcono(p.tratamiento)} ${limpiarTratamiento(p.tratamiento)} · ${pc.monto}`;
+    document.getElementById('pagoMonto').textContent = pc.monto;
+    const ref = 'VIN-' + String(p.id).padStart(3,'0');
+    document.getElementById('pagoRef').textContent = ref;
+    document.getElementById('exitoRef').textContent = ref;
+    document.getElementById('modalSolicitar').classList.add('active');
+  }
+
+  function cerrarModalSolicitar() {
+    document.getElementById('modalSolicitar').classList.remove('active');
+    prospectoSeleccionado = null;
+    comprobanteB64 = '';
+  }
+
+  function irPaso2() {
+    const nombre = document.getElementById('inputNombreAlumno').value.trim();
+    if (!nombre) {
+      document.getElementById('inputNombreAlumno').style.borderColor = '#EF4444';
+      setTimeout(() => document.getElementById('inputNombreAlumno').style.borderColor = '', 2000);
+      return;
+    }
+    nombreAlumnoSolicitud = nombre;
+    document.getElementById('paso1').style.display = 'none';
+    document.getElementById('paso2').style.display = 'block';
+  }
+
+  function irPaso3() {
+    document.getElementById('paso2').style.display = 'none';
+    document.getElementById('paso3').style.display = 'block';
+  }
+
+  function copiarRef() {
+    const ref = document.getElementById('pagoRef').textContent;
+    copiar(ref);
+  }
+
+  function previsualizarComprobante(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      comprobanteB64 = e.target.result;
+      const preview = document.getElementById('previewImg');
+      preview.src = comprobanteB64;
+      preview.style.display = 'block';
+      document.getElementById('btnEnviar').disabled = false;
+      document.querySelector('.upload-text').innerHTML =
+        '<strong style="color:#10B981">✅ Imagen lista para enviar</strong>';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function enviarSolicitud() {
+    if (!prospectoSeleccionado || !comprobanteB64) return;
+    const btn = document.getElementById('btnEnviar');
+    const txt = document.getElementById('btnEnviarTxt');
+    btn.disabled = true;
+    txt.textContent = 'Enviando...';
+    const pc = getPrecio(prospectoSeleccionado.tratamiento, prospectoSeleccionado.estado, prospectoSeleccionado.extracciones);
+    const ref = 'VIN-' + String(prospectoSeleccionado.id).padStart(3,'0');
+    try {
+      const resp = await fetch(API_URL + '?accion=registrarSolicitud' +
+        '&id=' + encodeURIComponent(prospectoSeleccionado.id) +
+        '&alumno=' + encodeURIComponent(nombreAlumnoSolicitud) +
+        '&ref=' + encodeURIComponent(ref) +
+        '&monto=' + encodeURIComponent(pc.monto) +
+        '&comprobante=' + encodeURIComponent(comprobanteB64.substring(0, 5000)),
+        { method: 'GET' }
+      );
+      document.getElementById('paso3').style.display = 'none';
+      document.getElementById('pasoExito').style.display = 'block';
+      await cargarProspectos();
+    } catch(e) {
+      btn.disabled = false;
+      txt.textContent = 'Enviar comprobante';
+      alert('Error al enviar. Intenta de nuevo.');
+    }
+  }
+
+  // Close modal on overlay click
+  document.getElementById('modalSolicitar').addEventListener('click', function(e) {
+    if (e.target === this) cerrarModalSolicitar();
+  });
 </script>
-  <div id="lightbox" onclick="cerrarLightbox()" style="position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:300;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;">
-    <img id="lightbox-img" src="" style="max-width:95vw;max-height:90vh;border-radius:12px;object-fit:contain;">
+
+<!-- MODAL SOLICITAR -->
+<div class="modal-overlay" id="modalSolicitar">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+
+    <!-- PASO 1: Nombre -->
+    <div id="paso1">
+      <div class="step-indicator">
+        <div class="step active" id="si1"></div>
+        <div class="step" id="si2"></div>
+        <div class="step" id="si3"></div>
+      </div>
+      <div class="modal-title">¿Cuál es tu nombre?</div>
+      <div class="modal-subtitle" id="sol-trat-label">Para reservar este prospecto</div>
+      <input class="modal-input" id="inputNombreAlumno" type="text" placeholder="Tu nombre completo..." autocomplete="off">
+      <button class="btn-solicitar-confirm" id="btnPaso1" onclick="irPaso2()">
+        Continuar →
+      </button>
+    </div>
+
+    <!-- PASO 2: Datos de pago -->
+    <div id="paso2" style="display:none">
+      <div class="step-indicator">
+        <div class="step done"></div>
+        <div class="step active"></div>
+        <div class="step" id="si3b"></div>
+      </div>
+      <div class="modal-title">Realiza tu pago</div>
+      <div class="modal-subtitle">Transfiere exactamente el monto indicado usando este código de referencia</div>
+
+      <div class="pago-box" style="margin-bottom:12px">
+        <div class="pago-label">Monto a transferir</div>
+        <div class="pago-monto" id="pagoMonto">$130</div>
+      </div>
+
+      <div class="pago-box" style="margin-bottom:12px">
+        <div class="pago-label">CLABE interbancaria</div>
+        <div class="pago-value" id="pagoClabe">728969000084218503</div>
+        <button class="copy-btn" onclick="copiar('728969000084218503')">📋 Copiar CLABE</button>
+      </div>
+
+      <div class="pago-box">
+        <div class="pago-label">⚠️ Concepto / Referencia obligatoria</div>
+        <div class="pago-ref" id="pagoRef">VIN-000</div>
+        <button class="copy-btn" onclick="copiarRef()">📋 Copiar referencia</button>
+        <div style="font-size:12px; color:#EF4444; margin-top:8px;">Escribe este código en el concepto de tu transferencia</div>
+      </div>
+
+      <div style="height:16px"></div>
+      <button class="btn-solicitar-confirm" onclick="irPaso3()">
+        Ya pagué, subir comprobante →
+      </button>
+      <button onclick="cerrarModalSolicitar()" style="width:100%;background:none;border:none;color:#64748B;padding:12px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;margin-top:4px;">Cancelar</button>
+    </div>
+
+    <!-- PASO 3: Subir comprobante -->
+    <div id="paso3" style="display:none">
+      <div class="step-indicator">
+        <div class="step done"></div>
+        <div class="step done"></div>
+        <div class="step active"></div>
+      </div>
+      <div class="modal-title">Sube tu comprobante</div>
+      <div class="modal-subtitle">Adjunta la captura de pantalla de tu transferencia</div>
+
+      <div class="upload-zone" onclick="document.getElementById('fileComp').click()">
+        <input type="file" id="fileComp" accept="image/*" onchange="previsualizarComprobante(event)">
+        <div class="upload-icon">📎</div>
+        <div class="upload-text">
+          <strong>Toca para seleccionar imagen</strong>
+          Captura de pantalla de tu comprobante
+        </div>
+        <img id="previewImg" class="upload-preview" alt="Comprobante">
+      </div>
+
+      <button class="btn-solicitar-confirm" id="btnEnviar" onclick="enviarSolicitud()" disabled>
+        <span id="btnEnviarTxt">Enviar comprobante</span>
+      </button>
+    </div>
+
+    <!-- ÉXITO -->
+    <div id="pasoExito" style="display:none">
+      <div class="success-screen">
+        <div class="success-icon">✅</div>
+        <div class="success-title">¡Solicitud enviada!</div>
+        <div class="success-text">
+          Tu comprobante fue recibido.<br>
+          En cuanto validemos el pago te enviamos los datos del prospecto por WhatsApp.<br><br>
+          <strong style="color:#F1F5F9">Referencia: <span id="exitoRef" style="color:#F59E0B"></span></strong>
+        </div>
+        <button onclick="cerrarModalSolicitar()" style="margin-top:24px;width:100%;padding:16px;background:#1A2744;border:1px solid #1E3A6E;border-radius:14px;color:#F1F5F9;font-size:15px;cursor:pointer;font-family:'DM Sans',sans-serif;">Cerrar</button>
+      </div>
+    </div>
   </div>
+</div>
+
 </body>
 </html>

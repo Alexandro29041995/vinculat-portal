@@ -1101,6 +1101,16 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     return s === 'true' || s.charAt(0) === 's';
   }
 
+  // Convierte texto del formulario ("Una","Dos","Tres o más") a número
+  function contarExtracciones(extr) {
+    if (!extr) return 0;
+    const s = String(extr).toLowerCase();
+    if (s.includes('tres') || s.includes('3') || s.includes('más') || s.includes('mas')) return 3;
+    if (s.includes('dos') || s === '2') return 2;
+    if (s.includes('una') || s === '1') return 1;
+    return parseInt(extr) || 1; // número directo o default 1
+  }
+
   function getPrecio(trat, estado, extr, horarioMana, horarioTarde, aparato) {
     const t = (trat || '').toLowerCase();
     if (estado === 'VIP') return { monto: '$' + PRECIOS.vip.toLocaleString(), clase: 'premium' };
@@ -1111,10 +1121,10 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
       if (horarioMana && String(horarioMana).trim()) return { monto: '$' + PRECIOS.infantil_manana.toLocaleString(), clase: 'normal' };
       return { monto: '$' + PRECIOS.infantil_tarde.toLocaleString(), clase: 'normal' };
     }
-    const n = parseInt(extr) || 0;
-    if (t.includes('extrac')) {
+    const n = contarExtracciones(extr);
+    if (t.includes('extrac') || t.includes('sacar') || t.includes('muela') || t.includes('juicio')) {
       if (n >= 3) return { monto: '$' + PRECIOS.extraccion_3.toLocaleString(), clase: 'normal' };
-      if (n === 2) return { monto: '$' + PRECIOS.extraccion_2.toLocaleString(), clase: 'normal' };
+      if (n >= 2) return { monto: '$' + PRECIOS.extraccion_2.toLocaleString(), clase: 'normal' };
     }
     return { monto: '$' + PRECIOS.general.toLocaleString(), clase: 'normal' };
   }

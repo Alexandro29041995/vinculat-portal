@@ -1142,7 +1142,8 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     const horario = horarioParts.join(' · ') || 'A definir';
     const folio  = (p.expediente || '').includes('primera') ? '🆕 Sin folio' : '📄 Con folio';
 
-    const badgeFoto = p.foto ? '<span class="badge-foto">📷 Con foto</span>' : '';
+    const badgeFoto    = p.foto ? '<span class="badge-foto">📷 Con foto</span>' : '';
+    const badgeAparato = (p.aparato && String(p.aparato).trim()) ? '<span class="badge-foto" style="background:rgba(251,191,36,0.15);color:#FCD34D;border-color:rgba(251,191,36,0.3);">🦷 Aparato</span>' : '';
     const badgeEstado = p.estado === 'VIP'
       ? `<span class="badge badge-red">🔴 PREMIUM</span>`
       : p.estado === 'Sabado'
@@ -1157,7 +1158,7 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
       <div class="card ${cardClase}" style="animation-delay:${delay}ms" onclick="abrirSheet(${JSON.stringify(p).replace(/"/g, '&quot;')})">
         <div class="card-top">
           <div class="card-id">${icono} ${p.id}</div>
-          <div class="card-badges">${badgeEstado}${badgeFoto}</div>
+          <div class="card-badges">${badgeEstado}${badgeFoto}${badgeAparato}</div>
         </div>
         <div class="card-tratamiento">${trat}</div>
         <div class="card-meta">
@@ -1321,13 +1322,15 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     const btnClass  = esPremium ? 'cta-premium' : esGratis ? 'cta-gratis' : 'cta-primary';
     const btnText   = esGratis ? '🎁 Apartar — preguntar por WhatsApp' : esPremium ? '🔴 Preguntar disponibilidad · $1,500' : `💬 Preguntar disponibilidad · ${precio.monto}`;
 
-    document.getElementById('sheet-titulo').textContent = p.id + ' — ' + trat;
+    const aparatoLabel = (p.aparato && String(p.aparato).trim()) ? ' · 🦷 Aparato' : '';
+    document.getElementById('sheet-titulo').textContent = p.id + ' — ' + trat + aparatoLabel;
 
     document.getElementById('sheet-body').innerHTML = `
       <div class="sheet-row"><span class="key">Tratamiento</span><span class="val">${trat}</span></div>
       <div class="sheet-row"><span class="key">Horario preferido</span><span class="val">${horario}</span></div>
       <div class="sheet-row"><span class="key">Expediente</span><span class="val">${folio}</span></div>
       ${p.extracciones ? `<div class="sheet-row"><span class="key">Extracciones</span><span class="val">${p.extracciones}</span></div>` : ''}
+      ${(p.aparato && String(p.aparato).trim()) ? `<div class="sheet-row"><span class="key">Requiere aparato</span><span class="val" style="color:#FCD34D;">🦷 Sí — incluido en el precio</span></div>` : ''}
       <div class="sheet-row"><span class="key">Estado</span><span class="val" style="color:${esPremium ? '#F87171' : esGratis ? '#FCD34D' : '#34D399'}">${p.estado}</span></div>
       <div class="sheet-row"><span class="key">Inversión</span><span class="val" style="color:${esPremium ? '#F87171' : esGratis ? '#FCD34D' : '#34D399'}; font-size:20px; font-family:'Syne',sans-serif;">${precio.monto}</span></div>
       ${fotoUrl ? `

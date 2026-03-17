@@ -1111,14 +1111,14 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     return parseInt(extr) || 1; // número directo o default 1
   }
 
-  function getPrecio(trat, estado, extr, horarioMana, horarioTarde, aparato) {
+  function getPrecio(trat, estado, extr, horario, aparato) {
     const t = (trat || '').toLowerCase();
     if (estado === 'VIP') return { monto: '$' + PRECIOS.vip.toLocaleString(), clase: 'premium' };
     if (estado === 'Sabado') return { monto: 'GRATIS', clase: 'gratis' };
     if (t.match(/endo|nervio|fractura|frontal|oscuro|anterior/)) return { monto: '$' + PRECIOS.vip.toLocaleString(), clase: 'premium' };
     if (tieneAparato(aparato)) return { monto: '$' + PRECIOS.aparato.toLocaleString(), clase: 'normal' };
     if (t.includes('infantil') || t.includes('niño') || t.includes('pedi')) {
-      if (horarioMana && String(horarioMana).trim()) return { monto: '$' + PRECIOS.infantil_manana.toLocaleString(), clase: 'normal' };
+      if (/\bam\b/i.test(horario || '')) return { monto: '$' + PRECIOS.infantil_manana.toLocaleString(), clase: 'normal' };
       return { monto: '$' + PRECIOS.infantil_tarde.toLocaleString(), clase: 'normal' };
     }
     const n = contarExtracciones(extr);
@@ -1152,13 +1152,10 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
 
   // ── CONSTRUIR CARD ──
   function buildCard(p, delay = 0) {
-    const precio = getPrecio(p.tratamiento, p.estado, p.extracciones, p.horarioMana, p.horarioTarde, p.aparato);
+    const precio = getPrecio(p.tratamiento, p.estado, p.extracciones, p.horario, p.aparato);
     const icono  = getIcono(p.tratamiento);
     const trat   = limpiarTratamiento(p.tratamiento);
-    const horarioParts = [];
-    if (p.horarioMana)  horarioParts.push('🌅 ' + p.horarioMana + ' (mañana)');
-    if (p.horarioTarde) horarioParts.push('🌆 ' + p.horarioTarde + ' (tarde)');
-    const horario = horarioParts.join(' · ') || 'A definir';
+    const horario = p.horario || 'A definir';
     const folio  = (p.expediente || '').includes('primera') ? '🆕 Sin folio' : '📄 Con folio';
 
     const badgeFoto    = p.foto ? '<span class="badge-foto">📷 Con foto</span>' : '';
@@ -1316,12 +1313,9 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     if (typeof p === 'string') p = JSON.parse(p);
     prospectoSeleccionado = p;
 
-    const precio = getPrecio(p.tratamiento, p.estado, p.extracciones, p.horarioMana, p.horarioTarde, p.aparato);
+    const precio = getPrecio(p.tratamiento, p.estado, p.extracciones, p.horario, p.aparato);
     const trat   = limpiarTratamiento(p.tratamiento);
-    const horarioParts = [];
-    if (p.horarioMana)  horarioParts.push('🌅 ' + p.horarioMana + ' (mañana)');
-    if (p.horarioTarde) horarioParts.push('🌆 ' + p.horarioTarde + ' (tarde)');
-    const horario = horarioParts.join(' · ') || 'A definir';
+    const horario = p.horario || 'A definir';
     const folio  = (p.expediente || '').includes('primera') ? 'No tiene folio' : 'Sí tiene folio';
 
     function getDriveImgUrl(url) {
@@ -1348,7 +1342,12 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
       <div class="sheet-row"><span class="key">Tratamiento</span><span class="val">${trat}</span></div>
       <div class="sheet-row"><span class="key">Horario preferido</span><span class="val">${horario}</span></div>
       <div class="sheet-row"><span class="key">Expediente</span><span class="val">${folio}</span></div>
+      ${p.edad ? `<div class="sheet-row"><span class="key">Edad del paciente</span><span class="val">${p.edad}</span></div>` : ''}
       ${p.extracciones ? `<div class="sheet-row"><span class="key">Extracciones</span><span class="val">${p.extracciones}</span></div>` : ''}
+      ${p.diente ? `<div class="sheet-row"><span class="key">Diente afectado</span><span class="val">${p.diente}</span></div>` : ''}
+      ${p.resinas ? `<div class="sheet-row"><span class="key">Resinas / Caries</span><span class="val">${p.resinas}</span></div>` : ''}
+      ${p.dolor ? `<div class="sheet-row"><span class="key">Dolor al frío/calor</span><span class="val">${p.dolor}</span></div>` : ''}
+      ${p.fractura ? `<div class="sheet-row"><span class="key">Tamaño fractura</span><span class="val">${p.fractura}</span></div>` : ''}
       ${tieneAparato(p.aparato) ? `<div class="sheet-row"><span class="key">Requiere aparato</span><span class="val" style="color:#FCD34D;">🦷 Sí — incluido en el precio</span></div>` : ''}
       <div class="sheet-row"><span class="key">Estado</span><span class="val" style="color:${esPremium ? '#F87171' : esGratis ? '#FCD34D' : '#34D399'}">${p.estado}</span></div>
       <div class="sheet-row"><span class="key">Inversión</span><span class="val" style="color:${esPremium ? '#F87171' : esGratis ? '#FCD34D' : '#34D399'}; font-size:20px; font-family:'Syne',sans-serif;">${precio.monto}</span></div>
@@ -1382,7 +1381,7 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     const p    = prospectoSeleccionado;
     const id   = p ? p.id : '';
     const trat = p ? (p.tratamiento||'').replace(/\.$/,'') : '';
-    const precio = getPrecio(p.tratamiento, p.estado, p.extracciones, p.horarioMana, p.horarioTarde, p.aparato).monto;
+    const precio = getPrecio(p.tratamiento, p.estado, p.extracciones, p.horario, p.aparato).monto;
     const msg  = encodeURIComponent(
 `Hola, soy alumno de la Facultad de Odontología UANL 🦷
 
@@ -1487,7 +1486,7 @@ Quiero apartar el siguiente prospecto de sábado gratuito:
     document.getElementById('paso2').style.display = 'none';
     document.getElementById('paso3').style.display = 'none';
     document.getElementById('pasoExito').style.display = 'none';
-    const pc = getPrecio(p.tratamiento, p.estado, p.extracciones, p.horarioMana, p.horarioTarde, p.aparato);
+    const pc = getPrecio(p.tratamiento, p.estado, p.extracciones, p.horario, p.aparato);
     document.getElementById('sol-trat-label').textContent =
       `${getIcono(p.tratamiento)} ${limpiarTratamiento(p.tratamiento)} · ${pc.monto}`;
     document.getElementById('pagoMonto').textContent = pc.monto;
@@ -1547,7 +1546,7 @@ Quiero apartar el siguiente prospecto de sábado gratuito:
     const txt = document.getElementById('btnEnviarTxt');
     btn.disabled = true;
     txt.textContent = 'Enviando...';
-    const pc = getPrecio(prospectoSeleccionado.tratamiento, prospectoSeleccionado.estado, prospectoSeleccionado.extracciones, prospectoSeleccionado.horarioMana, prospectoSeleccionado.horarioTarde, prospectoSeleccionado.aparato);
+    const pc = getPrecio(prospectoSeleccionado.tratamiento, prospectoSeleccionado.estado, prospectoSeleccionado.extracciones, prospectoSeleccionado.horario, prospectoSeleccionado.aparato);
     const ref = 'VIN-' + String(prospectoSeleccionado.id).padStart(3,'0');
     try {
       const resp = await fetch(API_URL + '?accion=registrarSolicitud' +

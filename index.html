@@ -317,6 +317,7 @@
   }
   .btn-adquirir:active { transform: scale(0.95); }
   .btn-normal  { background: var(--blue); color: white; box-shadow: 0 4px 12px rgba(37,99,235,0.35); }
+  .btn-secondary { background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.15); box-shadow: none; }
   .btn-premium { background: var(--red);  color: white; box-shadow: 0 4px 12px rgba(239,68,68,0.35); }
   .btn-gratis  { background: linear-gradient(135deg, var(--gold), #FCD34D); color: #1A0A00; box-shadow: 0 4px 12px rgba(245,158,11,0.35); }
 
@@ -489,7 +490,6 @@
     font-weight: 700;
     cursor: pointer;
     font-family: 'DM Sans', sans-serif;
-    margin-top: 8px;
     transition: all 0.2s;
     display: flex;
     align-items: center;
@@ -722,11 +722,6 @@
 .pago-value { font-size: 20px; font-weight: 700; color: #F1F5F9; letter-spacing: 1px; }
 .pago-monto { font-size: 32px; font-weight: 800; color: #10B981; font-family: 'Syne', sans-serif; }
 .pago-ref { font-size: 22px; font-weight: 700; color: #F59E0B; letter-spacing: 2px; }
-.copy-btn {
-  background: #1A2744; border: 1px solid #1E3A6E; border-radius: 8px;
-  padding: 6px 12px; color: #60A5FA; font-size: 12px; font-weight: 600;
-  cursor: pointer; font-family: 'DM Sans', sans-serif; margin-top: 8px;
-}
 .upload-zone {
   border: 2px dashed #1E3A6E; border-radius: 14px; padding: 20px;
   text-align: center; cursor: pointer; margin-bottom: 16px;
@@ -818,7 +813,7 @@
     <div style="font-size:10px;font-weight:800;color:#4ade80;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Canal oficial · Enlace Odontológico Universitario</div>
     <div style="font-size:17px;font-weight:800;color:white;line-height:1.3;margin-bottom:8px;">Entérate de los pacientes que nos van llegando</div>
     <div style="font-size:13px;color:#86efac;line-height:1.5;margin-bottom:14px;">Publicamos cada nuevo prospecto disponible en tiempo real. Sé el primero en enterarte y adquirirlo antes que otros alumnos. 🦷</div>
-    <a href="AQUI_VA_TU_LINK_DEL_CANAL" target="_blank"
+    <a href="https://whatsapp.com/channel/0029VbCVD7B0bIdsozNP8L1Y" target="_blank"
        style="display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:white;font-size:14px;font-weight:800;padding:13px;border-radius:12px;text-decoration:none;">
       📢 Unirme al canal de WhatsApp
     </a>
@@ -1227,7 +1222,10 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
         </div>
         <div class="card-footer">
           <div class="card-precio ${precio.clase}">${precio.monto}</div>
-          <button class="btn-adquirir ${btnClase}" onclick="event.stopPropagation(); ${p.estado === 'Sabado' ? `abrirWhatsAppGratis('${idSafe}')` : `solicitarProspecto('${idSafe}')`}">${btnText}</button>
+          <div style="display:flex; gap:8px;">
+            <button class="btn-adquirir btn-secondary" onclick="event.stopPropagation(); abrirSheet('${idSafe}')">Ver fotos</button>
+            <button class="btn-adquirir ${btnClase}" onclick="event.stopPropagation(); ${p.estado === 'Sabado' ? `abrirWhatsAppGratis('${idSafe}')` : `solicitarProspecto('${idSafe}')`}">${btnText}</button>
+          </div>
         </div>
       </div>`;
   }
@@ -1329,8 +1327,6 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
 
     const esGratis  = p.estado === 'Sabado';
     const esPremium = esCasoPremium(p.tratamiento, p.estado);
-    const btnClass  = esPremium ? 'cta-premium' : esGratis ? 'cta-gratis' : 'cta-primary';
-    const btnText   = esGratis ? '🎁 Apartar — preguntar por WhatsApp' : esPremium ? '🔴 Preguntar disponibilidad · $1,500' : `💬 Preguntar disponibilidad · ${precio.monto}`;
 
     let fotosHtml = '';
     if (p.foto) {
@@ -1347,6 +1343,20 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
       });
     }
 
+    // Configurar botones dinámicos en la ventana inferior
+    let botonesHtml = '';
+    if (esGratis) {
+      botonesHtml = `<button class="sheet-cta cta-gratis" onclick="abrirWhatsAppGratis('${id}')">🎁 Apartar — preguntar por WhatsApp</button>`;
+    } else {
+      const btnPremClass = esPremium ? 'cta-premium' : 'cta-primary';
+      botonesHtml = `
+        <div style="display:flex; flex-direction:column; gap:8px; margin-top: 14px;">
+          <button class="sheet-cta" style="background:#25D366; color:white; margin-top:0; box-shadow: 0 4px 12px rgba(37,211,102,0.3);" onclick="abrirWhatsAppDisponibilidad('${id}')">💬 Preguntar disponibilidad</button>
+          <button class="sheet-cta ${btnPremClass}" style="margin-top:0;" onclick="cerrarSheet(); solicitarProspecto('${id}')">💳 Pagar prospecto · ${precio.monto}</button>
+        </div>
+      `;
+    }
+
     document.getElementById('sheet-titulo').textContent = p.id + ' — ' + trat;
     document.getElementById('sheet-body').innerHTML = `
       <div class="sheet-row"><span class="key">Tratamiento</span><span class="val">${trat}</span></div>
@@ -1354,7 +1364,7 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
       <div class="sheet-row"><span class="key">Expediente</span><span class="val">${folio}</span></div>
       <div class="sheet-row"><span class="key">Inversión</span><span class="val" style="color:var(--green); font-size:20px;">${precio.monto}</span></div>
       ${fotosHtml}
-      <button class="sheet-cta ${btnClass}" onclick="${esGratis ? `abrirWhatsAppGratis('${id}')` : `solicitarProspecto('${id}')`}">${btnText}</button>
+      ${botonesHtml}
     `;
 
     document.getElementById('overlay').classList.add('show');
@@ -1372,6 +1382,14 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     if(!p) return;
     const msg = encodeURIComponent(`Hola, soy alumno 🦷\nQuiero apartar el prospecto de sábado gratuito:\n📋 *ID:* ${p.id}\n🔧 *Tratamiento:* ${p.tratamiento}\n🎁 *Inversión:* GRATIS`);
     window.open(`https://wa.me/${WHATSAPP}?text=${msg}`, '_blank');
+  }
+
+  function abrirWhatsAppDisponibilidad(id) {
+    const p = todosLosProspectos.find(x => String(x.id).trim() === String(id).trim());
+    if(!p) return;
+    const precio = getPrecio(p.tratamiento, p.estado, p.extracciones, p.horario, p.aparato, p.edad);
+    const msg = `Hola, soy alumno de la Facultad de Odontología UANL 🦷\n\nQuiero adquirir el siguiente prospecto:\n📋 *ID:* ${p.id}\n🔧 *Tratamiento:* ${limpiarTratamiento(p.tratamiento)}\n💰 *Inversión:* ${precio.monto}\n\n¿Está disponible? De ser así, por favor indícame los datos para realizar la transferencia y confirmar mi lugar. ✅`;
+    window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
   }
 
   // ── UTILS ──

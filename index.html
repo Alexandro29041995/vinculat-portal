@@ -1195,7 +1195,7 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     const btnText  = p.estado === 'Sabado' ? '🎁 Apartar' : 'Adquirir →';
     const cardClase = isPrem ? 'vip' : p.estado === 'Sabado' ? 'sabado' : 'disponible';
 
-    // 🛠️ SOLUCIÓN: Pasamos SOLO el ID como texto simple. ¡Imposible que se rompa!
+    // 🛠️ ¡AHORA SÍ! SOLO LE PASAMOS EL TEXTO DEL ID
     return `
       <div class="card ${cardClase}" style="animation-delay:${delay}ms" onclick="abrirSheet('${p.id}')">
         <div class="card-top">
@@ -1340,10 +1340,10 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
 
   // ── BOTTOM SHEET ──
   function abrirSheet(id) {
-    // 🛠️ SOLUCIÓN: Buscamos el paciente por su ID en la lista original
-    const p = todosLosProspectos.find(x => x.id === id);
+    // Buscamos el paciente exacto por su ID
+    const p = todosLosProspectos.find(x => String(x.id).trim() === String(id).trim());
     if (!p) return;
-    
+
     prospectoSeleccionado = p;
 
     const precio = getPrecio(p.tratamiento, p.estado, p.extracciones, p.horario, p.aparato, p.edad);
@@ -1415,7 +1415,11 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
 
   // ── WHATSAPP ──
   function abrirWhatsApp(idOverride) {
-    const p    = idOverride ? todosLosProspectos.find(x => x.id === idOverride) : prospectoSeleccionado;
+    let p = prospectoSeleccionado;
+    if (idOverride) {
+      p = todosLosProspectos.find(x => String(x.id).trim() === String(idOverride).trim());
+    }
+    
     const id   = p ? p.id : '';
     const trat = p ? (p.tratamiento||'').replace(/\.$/,'') : '';
     const precio = p ? getPrecio(p.tratamiento, p.estado, p.extracciones, p.horario, p.aparato, p.edad).monto : '';
@@ -1522,8 +1526,7 @@ Quiero apartar el siguiente prospecto de sábado gratuito:
 
   // ── FLUJO SOLICITAR ──────────────────────────────────────────
   function solicitarProspecto(id) {
-    // 🛠️ SOLUCIÓN: Buscamos el paciente por su ID
-    const p = todosLosProspectos.find(x => x.id === id);
+    const p = todosLosProspectos.find(x => String(x.id).trim() === String(id).trim());
     if (!p) return;
 
     prospectoSeleccionado = p;

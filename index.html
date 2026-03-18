@@ -499,7 +499,7 @@
   .sheet-cta:active { transform: scale(0.98); }
   .cta-primary { background: var(--blue); color: white; box-shadow: 0 6px 20px rgba(37,99,235,0.4); }
   .cta-premium { background: var(--red); color: white; box-shadow: 0 6px 20px rgba(239,68,68,0.4); }
-  .cta-gratis  { background: linear-gradient(135deg, var(--gold), #FCD34D); color: #1A0A00; }
+  .cta-gratis  { background: linear-gradient(135deg, var(--gold), #FCD34D); color: #1A0A00; box-shadow: 0 4px 12px rgba(245,158,11,0.35); }
 
   .warning-box {
     background: rgba(245,158,11,0.1);
@@ -748,6 +748,10 @@
 .success-icon { font-size: 56px; margin-bottom: 16px; }
 .success-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 8px; }
 .success-text { font-size: 14px; color: #64748B; line-height: 1.6; }
+/* LIGHTBOX PARA FOTOS */
+#lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 999; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+#lightbox-img { max-width: 90%; max-height: 85vh; border-radius: 12px; object-fit: contain; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+.lightbox-close { position: absolute; top: 20px; right: 20px; background: none; border: none; color: white; font-size: 32px; cursor: pointer; line-height: 1; }
 </style>
 </head>
 <body>
@@ -1067,22 +1071,20 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
 
 <script>
   const API_URL = 'https://script.google.com/macros/s/AKfycbwPDQoVUqbrJwob52woIh2Kg2DoV8Z3z5JAY6-rOg8Tnpl71AO5y2wfPYQAfDjcoCdICw/exec';
-  const WHATSAPP = '528126026552'; // ← Cambia por tu número de WhatsApp con código de país
-  const CLABE    = '728969000084218503'; // ← Cambia por tu CLABE real
+  const WHATSAPP = '528126026552'; 
+  const CLABE    = '728969000084218503'; 
   let PRECIOS = { vip:1500, infantil_manana:200, infantil_tarde:130, extraccion_2:260, extraccion_3:390, aparato:250, general:130 };
 
   let todosLosProspectos = [];
   let filtroActual = 'todos';
-
-  // ── NUEVAS VARIABLES PARA FLUJO SOLICITAR ──
+  let prospectoSeleccionado = null;
   let nombreAlumnoSolicitud = '';
   let comprobanteB64 = '';
-  let prospectoSeleccionado = null;
 
   // ── DETECTOR PREMIUM GLOBAL ──
   function esCasoPremium(trat, estado) {
     if (estado === 'VIP') return true;
-    const t = (trat || '').toLowerCase();
+    const t = String(trat || '').toLowerCase();
     return !!t.match(/endo|nervio|fractura|frontal|oscuro|anterior/);
   }
 
@@ -1104,8 +1106,8 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
   }
 
   function getPrecio(trat, estado, extr, horario, aparato, edad) {
-    const t = (trat || '').toLowerCase();
-    const h = (horario || '').toLowerCase();
+    const t = String(trat || '').toLowerCase();
+    const h = String(horario || '').toLowerCase();
 
     // 1. VIP / PREMIUM Automático
     if (esCasoPremium(trat, estado)) return { monto: '$' + PRECIOS.vip.toLocaleString(), clase: 'premium' };
@@ -1121,7 +1123,6 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     if (esInfantil && es8a12) {
       let reqAparato = tieneAparato(aparato);
       let puedeManana = /mañana|mañanas|\bam\b/i.test(h);
-
       if (reqAparato && puedeManana) return { monto: '$500', clase: 'normal' };
       if (reqAparato || puedeManana) return { monto: '$300', clase: 'normal' };
       return { monto: '$' + PRECIOS.infantil_tarde.toLocaleString(), clase: 'normal' };
@@ -1147,9 +1148,8 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     return { monto: '$' + PRECIOS.general.toLocaleString(), clase: 'normal' };
   }
 
-  // ── ICONO POR TRATAMIENTO ──
   function getIcono(tratamiento) {
-    const t = (tratamiento || '').toLowerCase();
+    const t = String(tratamiento || '').toLowerCase();
     if (t.includes('endodoncia') || t.includes('nervio') || t.includes('fractura')) return '🔴';
     if (t.includes('extracción') || t.includes('extracci') || t.includes('sacar')) return '🦷';
     if (t.includes('resina') || t.includes('caries') || t.includes('empa')) return '🔵';
@@ -1163,9 +1163,8 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     return '🦷';
   }
 
-  // ── LIMPIAR TRATAMIENTO ──
   function limpiarTratamiento(t) {
-    return (t || '').replace(/\.$/, '').trim();
+    return String(t || '').replace(/\.$/, '').trim();
   }
 
   // ── CONSTRUIR CARD ──
@@ -1174,11 +1173,12 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     const icono  = getIcono(p.tratamiento);
     const trat   = limpiarTratamiento(p.tratamiento);
     const horario = p.horario || 'A definir';
-    const folio  = (p.expediente || '').includes('primera') ? '🆕 Sin folio' : '📄 Con folio';
+    const folio  = String(p.expediente || '').includes('primera') ? '🆕 Sin folio' : '📄 Con folio';
+    const idSafe = String(p.id).trim();
 
     let numFotos = 0;
     if (p.foto) {
-      numFotos = p.foto.split('|').filter(u => u.trim() !== '').length;
+      numFotos = String(p.foto).split('|').filter(u => u.trim() !== '').length;
     }
     const badgeFoto = numFotos > 0 ? `<span class="badge-foto">📷 ${numFotos > 1 ? numFotos + ' Fotos' : 'Con foto'}</span>` : '';
     
@@ -1195,11 +1195,10 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     const btnText  = p.estado === 'Sabado' ? '🎁 Apartar' : 'Adquirir →';
     const cardClase = isPrem ? 'vip' : p.estado === 'Sabado' ? 'sabado' : 'disponible';
 
-    // 🛠️ ¡AHORA SÍ! SOLO LE PASAMOS EL TEXTO DEL ID
     return `
-      <div class="card ${cardClase}" style="animation-delay:${delay}ms" onclick="abrirSheet('${p.id}')">
+      <div class="card ${cardClase}" style="animation-delay:${delay}ms" onclick="abrirSheet('${idSafe}')">
         <div class="card-top">
-          <div class="card-id">${icono} ${p.id}</div>
+          <div class="card-id">${icono} ${idSafe}</div>
           <div class="card-badges">${badgeEstado}${badgeFoto}${badgeAparato}</div>
         </div>
         <div class="card-tratamiento">${trat}</div>
@@ -1210,44 +1209,18 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
         </div>
         <div class="card-footer">
           <div class="card-precio ${precio.clase}">${precio.monto}</div>
-          <button class="btn-adquirir ${btnClase}" onclick="event.stopPropagation(); ${p.estado === 'Sabado' ? `abrirWhatsApp('${p.id}')` : `solicitarProspecto('${p.id}')`}">${btnText}</button>
+          <button class="btn-adquirir ${btnClase}" onclick="event.stopPropagation(); ${p.estado === 'Sabado' ? `abrirWhatsAppGratis('${idSafe}')` : `solicitarProspecto('${idSafe}')`}">${btnText}</button>
         </div>
       </div>`;
   }
 
   // ── CARGAR PROSPECTOS ──
-  function iniciarTimer() {
-    let seg = 0;
-    const msgs = [
-      '⏳ Conectando con Google Sheets...',
-      '⏳ Leyendo prospectos...',
-      '⏳ Casi listo...',
-      '⏳ Un momento más...',
-      '⏳ Procesando datos...',
-    ];
-    const ids = ['timer-inicio','timer-todos'];
-    const interval = setInterval(() => {
-      seg++;
-      const msg = msgs[Math.min(seg-1, msgs.length-1)] + ` (${seg}s)`;
-      ids.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = msg;
-      });
-    }, 1000);
-    return interval;
-  }
-
   async function cargarProspectos() {
     const btn  = document.getElementById('sync-btn');
-    const txt  = document.getElementById('sync-text');
     btn.classList.add('loading');
-    txt.textContent = 'Cargando...';
-    const timer = iniciarTimer();
-
     try {
       const res  = await fetch(API_URL);
       const json = await res.json();
-
       if (!json.ok) throw new Error('API error');
 
       todosLosProspectos = json.data.reverse(); 
@@ -1258,8 +1231,6 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
       toast('❌ Error al cargar. Reintenta.');
     } finally {
       btn.classList.remove('loading');
-      txt.textContent = 'Actualizar';
-      clearInterval(timer);
     }
   }
 
@@ -1270,13 +1241,11 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     const sabados     = todosLosProspectos.filter(p => p.estado === 'Sabado');
     const total       = todosLosProspectos.length;
 
-    // Stats
     document.getElementById('stat-disponibles').textContent = disponibles.length;
     document.getElementById('stat-vip').textContent  = vips.length;
     document.getElementById('stat-sabado').textContent = sabados.length;
     document.getElementById('stat-total').textContent  = total;
 
-    // VIP Banner
     const vipBanner = document.getElementById('vip-banner-container');
     vipBanner.innerHTML = vips.length > 0 ? `
       <div class="vip-banner" onclick="filtrar('vip', null); showPanel('prospectos', document.querySelectorAll('.nav-item')[1])">
@@ -1288,27 +1257,24 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
         <div class="vip-count">${vips.length}</div>
       </div>` : '';
 
-    // Sábado Banner
     const sabBanner = document.getElementById('sabado-banner-container');
     sabBanner.innerHTML = sabados.length > 0 ? `
       <div class="sabado-banner">
         <div class="sabado-icon">🎁</div>
         <div class="vip-text">
-          <div class="sabado-title">${sabados.length} prospecto${sabados.length > 1 ? 's' : ''} de sábado disponible${sabados.length > 1 ? 's' : ''}</div>
+          <div class="sabado-title">${sabados.length} prospecto${sabados.length > 1 ? 's' : ''} disponible${sabados.length > 1 ? 's' : ''}</div>
           <div class="sabado-sub">Gratis para alumnos activos — solo este sábado</div>
         </div>
       </div>` : '';
 
-    // Recientes (últimos 5)
     const recientes = todosLosProspectos.slice(0, 5); 
     document.getElementById('recientes-count').textContent = recientes.length;
     const recDiv = document.getElementById('cards-recientes');
     if (recientes.length === 0) {
-      recDiv.innerHTML = `<div class="empty"><div class="ei">🦷</div><p>No hay prospectos disponibles en este momento.<br>Regresa más tarde.</p></div>`;
+      recDiv.innerHTML = `<div class="empty"><p>No hay prospectos.</p></div>`;
     } else {
       recDiv.innerHTML = recientes.map((p, i) => buildCard(p, i * 60)).join('');
     }
-
     renderFiltro();
   }
 
@@ -1321,14 +1287,8 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     } else if (filtroActual === 'sabado') {
       lista = todosLosProspectos.filter(p => p.estado.toLowerCase() === 'sabado');
     }
-
     document.getElementById('todos-count').textContent = lista.length;
-    const div = document.getElementById('cards-todos');
-    if (lista.length === 0) {
-      div.innerHTML = `<div class="empty"><div class="ei">🔍</div><p>No hay prospectos con este filtro.</p></div>`;
-    } else {
-      div.innerHTML = lista.map((p, i) => buildCard(p, i * 40)).join('');
-    }
+    document.getElementById('cards-todos').innerHTML = lista.map((p, i) => buildCard(p, i * 40)).join('');
   }
 
   function filtrar(tipo, btn) {
@@ -1340,68 +1300,43 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
 
   // ── BOTTOM SHEET ──
   function abrirSheet(id) {
-    // Buscamos el paciente exacto por su ID
     const p = todosLosProspectos.find(x => String(x.id).trim() === String(id).trim());
     if (!p) return;
-
     prospectoSeleccionado = p;
 
     const precio = getPrecio(p.tratamiento, p.estado, p.extracciones, p.horario, p.aparato, p.edad);
     const trat   = limpiarTratamiento(p.tratamiento);
     const horario = p.horario || 'A definir';
-    const folio  = (p.expediente || '').includes('primera') ? 'No tiene folio' : 'Sí tiene folio';
+    const folio  = String(p.expediente || '').includes('primera') ? 'No tiene folio' : 'Sí tiene folio';
 
     const esGratis  = p.estado === 'Sabado';
     const esPremium = esCasoPremium(p.tratamiento, p.estado);
     const btnClass  = esPremium ? 'cta-premium' : esGratis ? 'cta-gratis' : 'cta-primary';
     const btnText   = esGratis ? '🎁 Apartar — preguntar por WhatsApp' : esPremium ? '🔴 Preguntar disponibilidad · $1,500' : `💬 Preguntar disponibilidad · ${precio.monto}`;
 
-    const aparatoLabel = tieneAparato(p.aparato) ? ' · 🦷 Aparato' : '';
-    document.getElementById('sheet-titulo').textContent = p.id + ' — ' + trat + aparatoLabel;
-
     let fotosHtml = '';
     if (p.foto) {
-      const fotosArr = p.foto.split('|').map(u => u.trim()).filter(u => u.length > 0);
+      const fotosArr = String(p.foto).split('|').map(u => u.trim()).filter(u => u.length > 0);
       fotosArr.forEach((urlRaw, index) => {
         let safeUrl = urlRaw.replace('http:', 'https:');
         const matchId = safeUrl.match(/[?&]id=([a-zA-Z0-9_-]{25,})/);
-        if (matchId) {
-          safeUrl = 'https://drive.google.com/uc?export=view&id=' + matchId[1];
-        }
-        
+        if (matchId) safeUrl = 'https://drive.google.com/uc?export=view&id=' + matchId[1];
         fotosHtml += `
-        <div style="margin-top:12px;border-radius:12px;overflow:hidden;cursor:pointer;position:relative;" onclick="abrirLightbox('${safeUrl}')">
-          <img src="${safeUrl}" alt="Foto ${index + 1}" style="width:100%;max-height:220px;object-fit:cover;border-radius:12px;display:block;"
-               onerror="this.parentElement.style.display='none'">
-          <div style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.6);color:white;font-size:11px;padding:4px 8px;border-radius:6px;">🔍 Ampliar</div>
-          <div style="position:absolute;top:8px;left:8px;background:rgba(14,165,233,0.8);color:white;font-size:11px;font-weight:700;padding:4px 8px;border-radius:6px;">📷 Foto ${index + 1} de ${fotosArr.length}</div>
+        <div style="margin-top:12px;border-radius:12px;overflow:hidden;border:1px solid var(--border);" onclick="abrirLightbox('${safeUrl}')">
+          <img src="${safeUrl}" alt="Foto ${index + 1}" style="width:100%;max-height:220px;object-fit:cover;display:block;">
+          <div style="text-align:center;padding:8px;font-size:11px;color:var(--muted)">🔍 Ampliar Foto ${index + 1}</div>
         </div>`;
       });
     }
 
+    document.getElementById('sheet-titulo').textContent = p.id + ' — ' + trat;
     document.getElementById('sheet-body').innerHTML = `
       <div class="sheet-row"><span class="key">Tratamiento</span><span class="val">${trat}</span></div>
       <div class="sheet-row"><span class="key">Horario preferido</span><span class="val">${horario}</span></div>
       <div class="sheet-row"><span class="key">Expediente</span><span class="val">${folio}</span></div>
-      ${p.edad ? `<div class="sheet-row"><span class="key">Edad del paciente</span><span class="val">${p.edad}</span></div>` : ''}
-      ${p.extracciones ? `<div class="sheet-row"><span class="key">Extracciones</span><span class="val">${p.extracciones}</span></div>` : ''}
-      ${p.diente ? `<div class="sheet-row"><span class="key">Diente afectado</span><span class="val">${p.diente}</span></div>` : ''}
-      ${p.resinas ? `<div class="sheet-row"><span class="key">Resinas / Caries</span><span class="val">${p.resinas}</span></div>` : ''}
-      ${p.dolor ? `<div class="sheet-row"><span class="key">Dolor al frío/calor</span><span class="val">${p.dolor}</span></div>` : ''}
-      ${p.fractura ? `<div class="sheet-row"><span class="key">Tamaño fractura</span><span class="val">${p.fractura}</span></div>` : ''}
-      ${tieneAparato(p.aparato) ? `<div class="sheet-row"><span class="key">Requiere aparato</span><span class="val" style="color:#FCD34D;">🦷 Sí — incluido en el precio</span></div>` : ''}
-      <div class="sheet-row"><span class="key">Estado</span><span class="val" style="color:${esPremium ? '#F87171' : esGratis ? '#FCD34D' : '#34D399'}">${isPrem ? 'Premium' : p.estado}</span></div>
-      <div class="sheet-row"><span class="key">Inversión</span><span class="val" style="color:${esPremium ? '#F87171' : esGratis ? '#FCD34D' : '#34D399'}; font-size:20px; font-family:'Syne',sans-serif;">${precio.monto}</span></div>
-      
+      <div class="sheet-row"><span class="key">Inversión</span><span class="val" style="color:var(--green); font-size:20px;">${precio.monto}</span></div>
       ${fotosHtml}
-
-      <div class="warning-box" style="margin-top:12px;">
-        ${esGratis
-          ? '🎁 Prospecto de sábado gratuito. Al tocar el botón se abrirá WhatsApp para confirmar disponibilidad con el operador.'
-          : '💬 Al tocar el botón se abrirá WhatsApp. Pregunta si está disponible y el operador te enviará los datos de transferencia de forma segura.'}
-      </div>
-
-      <button class="sheet-cta ${btnClass}" onclick="${esGratis ? 'abrirWhatsAppGratis()' : 'abrirWhatsApp()'}">${btnText}</button>
+      <button class="sheet-cta ${btnClass}" onclick="${esGratis ? `abrirWhatsAppGratis('${id}')` : `solicitarProspecto('${id}')`}">${btnText}</button>
     `;
 
     document.getElementById('overlay').classList.add('show');
@@ -1414,48 +1349,11 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
   }
 
   // ── WHATSAPP ──
-  function abrirWhatsApp(idOverride) {
-    let p = prospectoSeleccionado;
-    if (idOverride) {
-      p = todosLosProspectos.find(x => String(x.id).trim() === String(idOverride).trim());
-    }
-    
-    const id   = p ? p.id : '';
-    const trat = p ? (p.tratamiento||'').replace(/\.$/,'') : '';
-    const precio = p ? getPrecio(p.tratamiento, p.estado, p.extracciones, p.horario, p.aparato, p.edad).monto : '';
-    const msg  = encodeURIComponent(
-`Hola, soy alumno de la Facultad de Odontología UANL 🦷
-
-Quiero adquirir el siguiente prospecto:
-📋 *ID:* ${id}
-🔧 *Tratamiento:* ${trat}
-💰 *Inversión:* ${precio}
-
-¿Está disponible? De ser así, por favor indícame los datos para realizar la transferencia y confirmar mi lugar. ✅`
-    );
+  function abrirWhatsAppGratis(id) {
+    const p = todosLosProspectos.find(x => String(x.id).trim() === String(id).trim());
+    if(!p) return;
+    const msg = encodeURIComponent(`Hola, soy alumno 🦷\nQuiero apartar el prospecto de sábado gratuito:\n📋 *ID:* ${p.id}\n🔧 *Tratamiento:* ${p.tratamiento}\n🎁 *Inversión:* GRATIS`);
     window.open(`https://wa.me/${WHATSAPP}?text=${msg}`, '_blank');
-  }
-
-  function abrirWhatsAppGratis() {
-    const p    = prospectoSeleccionado;
-    const id   = p ? p.id : '';
-    const trat = p ? (p.tratamiento||'').replace(/\.$/,'') : '';
-    const msg  = encodeURIComponent(
-`Hola, soy alumno de la Facultad de Odontología UANL 🦷
-
-Quiero apartar el siguiente prospecto de sábado gratuito:
-📋 *ID:* ${id}
-🔧 *Tratamiento:* ${trat}
-🎁 *Inversión:* GRATIS
-
-¿Está disponible? ✅`
-    );
-    window.open(`https://wa.me/${WHATSAPP}?text=${msg}`, '_blank');
-  }
-
-  function copiarConcepto() {
-    const id = prospectoSeleccionado ? prospectoSeleccionado.id : '';
-    copiar(id);
   }
 
   // ── UTILS ──
@@ -1496,39 +1394,27 @@ Quiero apartar el siguiente prospecto de sábado gratuito:
   function toggleGuion(header) {
     const body = header.nextElementSibling;
     body.classList.toggle('open');
-    header.querySelector('span:last-child').textContent = body.classList.contains('open') ? '▴' : '▾';
   }
 
   function togglePolitica(header) {
     const body = header.nextElementSibling;
     body.classList.toggle('open');
-    header.querySelector('span:last-child').textContent = body.classList.contains('open') ? '▴' : '▾';
   }
 
-  // ── INIT ──
-  cargarProspectos();
   function abrirLightbox(url) {
     const lb = document.getElementById('lightbox');
-    if(lb) {
-        document.getElementById('lightbox-img').src = url;
-        lb.style.opacity = '1'; lb.style.pointerEvents = 'all';
-    } else {
-        window.open(url, '_blank'); 
-    }
+    document.getElementById('lightbox-img').src = url;
+    lb.style.opacity = '1'; lb.style.pointerEvents = 'all';
   }
   function cerrarLightbox() {
     const lb = document.getElementById('lightbox');
-    if(lb) {
-        lb.style.opacity = '0'; lb.style.pointerEvents = 'none';
-        document.getElementById('lightbox-img').src = '';
-    }
+    lb.style.opacity = '0'; lb.style.pointerEvents = 'none';
   }
 
-  // ── FLUJO SOLICITAR ──────────────────────────────────────────
+  // ── FLUJO SOLICITAR ──
   function solicitarProspecto(id) {
     const p = todosLosProspectos.find(x => String(x.id).trim() === String(id).trim());
     if (!p) return;
-
     prospectoSeleccionado = p;
     comprobanteB64 = '';
     document.getElementById('inputNombreAlumno').value = '';
@@ -1536,9 +1422,9 @@ Quiero apartar el siguiente prospecto de sábado gratuito:
     document.getElementById('paso2').style.display = 'none';
     document.getElementById('paso3').style.display = 'none';
     document.getElementById('pasoExito').style.display = 'none';
+    
     const pc = getPrecio(p.tratamiento, p.estado, p.extracciones, p.horario, p.aparato, p.edad);
-    document.getElementById('sol-trat-label').textContent =
-      `${getIcono(p.tratamiento)} ${limpiarTratamiento(p.tratamiento)} · ${pc.monto}`;
+    document.getElementById('sol-trat-label').textContent = `${limpiarTratamiento(p.tratamiento)} · ${pc.monto}`;
     document.getElementById('pagoMonto').textContent = pc.monto;
     const ref = 'VIN-' + String(p.id).padStart(3,'0');
     document.getElementById('pagoRef').textContent = ref;
@@ -1548,15 +1434,12 @@ Quiero apartar el siguiente prospecto de sábado gratuito:
 
   function cerrarModalSolicitar() {
     document.getElementById('modalSolicitar').classList.remove('active');
-    prospectoSeleccionado = null;
-    comprobanteB64 = '';
   }
 
   function irPaso2() {
     const nombre = document.getElementById('inputNombreAlumno').value.trim();
     if (!nombre) {
       document.getElementById('inputNombreAlumno').style.borderColor = '#EF4444';
-      setTimeout(() => document.getElementById('inputNombreAlumno').style.borderColor = '', 2000);
       return;
     }
     nombreAlumnoSolicitud = nombre;
@@ -1569,11 +1452,6 @@ Quiero apartar el siguiente prospecto de sábado gratuito:
     document.getElementById('paso3').style.display = 'block';
   }
 
-  function copiarRef() {
-    const ref = document.getElementById('pagoRef').textContent;
-    copiar(ref);
-  }
-
   function previsualizarComprobante(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -1584,22 +1462,21 @@ Quiero apartar el siguiente prospecto de sábado gratuito:
       preview.src = comprobanteB64;
       preview.style.display = 'block';
       document.getElementById('btnEnviar').disabled = false;
-      document.querySelector('.upload-text').innerHTML =
-        '<strong style="color:#10B981">✅ Imagen lista para enviar</strong>';
     };
     reader.readAsDataURL(file);
   }
 
   async function enviarSolicitud() {
-    if (!prospectoSeleccionado || !comprobanteB64) return;
     const btn = document.getElementById('btnEnviar');
     const txt = document.getElementById('btnEnviarTxt');
     btn.disabled = true;
     txt.textContent = 'Enviando...';
+    
     const pc = getPrecio(prospectoSeleccionado.tratamiento, prospectoSeleccionado.estado, prospectoSeleccionado.extracciones, prospectoSeleccionado.horario, prospectoSeleccionado.aparato, prospectoSeleccionado.edad);
     const ref = 'VIN-' + String(prospectoSeleccionado.id).padStart(3,'0');
+    
     try {
-      const resp = await fetch(API_URL + '?accion=registrarSolicitud' +
+      await fetch(API_URL + '?accion=registrarSolicitud' +
         '&id=' + encodeURIComponent(prospectoSeleccionado.id) +
         '&alumno=' + encodeURIComponent(nombreAlumnoSolicitud) +
         '&ref=' + encodeURIComponent(ref) +
@@ -1613,102 +1490,52 @@ Quiero apartar el siguiente prospecto de sábado gratuito:
     } catch(e) {
       btn.disabled = false;
       txt.textContent = 'Enviar comprobante';
-      alert('Error al enviar. Intenta de nuevo.');
+      alert('Error al enviar.');
     }
   }
 
-  // Close modal on overlay click
-  document.getElementById('modalSolicitar').addEventListener('click', function(e) {
-    if (e.target === this) cerrarModalSolicitar();
-  });
+  cargarProspectos();
 </script>
 
-<div class="modal-overlay" id="modalSolicitar">
-  <div class="modal-box">
+<div class="modal-overlay solicitar-overlay" id="modalSolicitar" onclick="if(event.target===this) cerrarModalSolicitar()">
+  <div class="modal-box solicitar-box">
     <div class="modal-handle"></div>
 
     <div id="paso1">
-      <div class="step-indicator">
-        <div class="step active" id="si1"></div>
-        <div class="step" id="si2"></div>
-        <div class="step" id="si3"></div>
-      </div>
+      <div class="step-indicator"><div class="step active"></div><div class="step"></div><div class="step"></div></div>
       <div class="modal-title">¿Cuál es tu nombre?</div>
-      <div class="modal-subtitle" id="sol-trat-label">Para reservar este prospecto</div>
+      <div class="modal-subtitle" id="sol-trat-label">Cargando tratamiento...</div>
       <input class="modal-input" id="inputNombreAlumno" type="text" placeholder="Tu nombre completo..." autocomplete="off">
-      <button class="btn-solicitar-confirm" id="btnPaso1" onclick="irPaso2()">
-        Continuar →
-      </button>
+      <button class="btn-solicitar-confirm" onclick="irPaso2()">Continuar →</button>
     </div>
 
     <div id="paso2" style="display:none">
-      <div class="step-indicator">
-        <div class="step done"></div>
-        <div class="step active"></div>
-        <div class="step" id="si3b"></div>
-      </div>
+      <div class="step-indicator"><div class="step done"></div><div class="step active"></div><div class="step"></div></div>
       <div class="modal-title">Realiza tu pago</div>
-      <div class="modal-subtitle">Transfiere exactamente el monto indicado usando este código de referencia</div>
-
-      <div class="pago-box" style="margin-bottom:12px">
-        <div class="pago-label">Monto a transferir</div>
-        <div class="pago-monto" id="pagoMonto">$130</div>
-      </div>
-
-      <div class="pago-box" style="margin-bottom:12px">
-        <div class="pago-label">CLABE interbancaria</div>
-        <div class="pago-value" id="pagoClabe">728969000084218503</div>
-        <button class="copy-btn" onclick="copiar('728969000084218503')">📋 Copiar CLABE</button>
-      </div>
-
-      <div class="pago-box">
-        <div class="pago-label">⚠️ Concepto / Referencia obligatoria</div>
-        <div class="pago-ref" id="pagoRef">VIN-000</div>
-        <button class="copy-btn" onclick="copiarRef()">📋 Copiar referencia</button>
-        <div style="font-size:12px; color:#EF4444; margin-top:8px;">Escribe este código en el concepto de tu transferencia</div>
-      </div>
-
-      <div style="height:16px"></div>
-      <button class="btn-solicitar-confirm" onclick="irPaso3()">
-        Ya pagué, subir comprobante →
-      </button>
-      <button onclick="cerrarModalSolicitar()" style="width:100%;background:none;border:none;color:#64748B;padding:12px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;margin-top:4px;">Cancelar</button>
+      <div class="modal-subtitle">Transfiere el monto exacto con esta referencia</div>
+      <div class="pago-box"><div class="pago-label">Monto</div><div class="pago-monto" id="pagoMonto">$130</div></div>
+      <div class="pago-box"><div class="pago-label">CLABE interbancaria</div><div class="pago-value">728969000084218503</div><button class="copy-btn" onclick="copiar('728969000084218503')">📋 Copiar</button></div>
+      <div class="pago-box"><div class="pago-label">⚠️ Concepto obligatorio</div><div class="pago-ref" id="pagoRef">VIN-000</div><button class="copy-btn" onclick="copiar(document.getElementById('pagoRef').innerText)">📋 Copiar</button></div>
+      <button class="btn-solicitar-confirm" onclick="irPaso3()">Ya pagué, subir comprobante →</button>
     </div>
 
     <div id="paso3" style="display:none">
-      <div class="step-indicator">
-        <div class="step done"></div>
-        <div class="step done"></div>
-        <div class="step active"></div>
-      </div>
+      <div class="step-indicator"><div class="step done"></div><div class="step done"></div><div class="step active"></div></div>
       <div class="modal-title">Sube tu comprobante</div>
-      <div class="modal-subtitle">Adjunta la captura de pantalla de tu transferencia</div>
-
       <div class="upload-zone" onclick="document.getElementById('fileComp').click()">
         <input type="file" id="fileComp" accept="image/*" onchange="previsualizarComprobante(event)">
-        <div class="upload-icon">📎</div>
-        <div class="upload-text">
-          <strong>Toca para seleccionar imagen</strong>
-          Captura de pantalla de tu comprobante
-        </div>
-        <img id="previewImg" class="upload-preview" alt="Comprobante">
+        <div class="upload-text"><strong>Toca para seleccionar imagen</strong></div>
+        <img id="previewImg" class="upload-preview">
       </div>
-
-      <button class="btn-solicitar-confirm" id="btnEnviar" onclick="enviarSolicitud()" disabled>
-        <span id="btnEnviarTxt">Enviar comprobante</span>
-      </button>
+      <button class="btn-solicitar-confirm" id="btnEnviar" onclick="enviarSolicitud()" disabled><span id="btnEnviarTxt">Enviar comprobante</span></button>
     </div>
 
     <div id="pasoExito" style="display:none">
-      <div class="success-screen">
-        <div class="success-icon">✅</div>
-        <div class="success-title">¡Solicitud enviada!</div>
-        <div class="success-text">
-          Tu comprobante fue recibido.<br>
-          En cuanto validemos el pago te enviamos los datos del prospecto por WhatsApp.<br><br>
-          <strong style="color:#F1F5F9">Referencia: <span id="exitoRef" style="color:#F59E0B"></span></strong>
-        </div>
-        <button onclick="cerrarModalSolicitar()" style="margin-top:24px;width:100%;padding:16px;background:#1A2744;border:1px solid #1E3A6E;border-radius:14px;color:#F1F5F9;font-size:15px;cursor:pointer;font-family:'DM Sans',sans-serif;">Cerrar</button>
+      <div style="text-align:center;">
+        <div style="font-size:56px;margin-bottom:16px;">✅</div>
+        <div class="modal-title">¡Solicitud enviada!</div>
+        <div class="modal-subtitle">Validaremos el pago y te enviaremos los datos por WhatsApp.<br><br><strong>Ref: <span id="exitoRef" style="color:var(--gold)"></span></strong></div>
+        <button onclick="cerrarModalSolicitar()" class="btn-solicitar-confirm" style="background:#1A2744;">Cerrar</button>
       </div>
     </div>
   </div>

@@ -752,7 +752,6 @@
 </head>
 <body>
 
-<!-- HEADER -->
 <div class="header">
   <div class="header-top">
     <div class="logo">
@@ -784,9 +783,6 @@
   </div>
 </div>
 
-<!-- PANELS -->
-
-<!-- ══ INICIO ══ -->
 <div class="panel active" id="panel-inicio">
   <div id="vip-banner-container"></div>
   <div id="sabado-banner-container"></div>
@@ -802,12 +798,10 @@
     </div>
   </div>
 
-  <!-- CTA ver lista completa -->
   <button onclick="showPanel('prospectos')" style="width:100%;margin-top:4px;padding:14px;background:rgba(37,99,235,0.12);border:1px solid rgba(37,99,235,0.3);border-radius:14px;color:#60A5FA;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;">
     🦷 Ver lista completa de prospectos →
   </button>
 
-  <!-- Banner canal WhatsApp -->
   <div style="margin-top:12px;background:linear-gradient(135deg,#0f3d1f,#145a28);border:1px solid #1a7a35;border-radius:16px;padding:18px 16px;">
     <div style="font-size:10px;font-weight:800;color:#4ade80;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Canal oficial · Vinculat Odonto</div>
     <div style="font-size:17px;font-weight:800;color:white;line-height:1.3;margin-bottom:8px;">Entérate de los pacientes que nos van llegando</div>
@@ -821,7 +815,6 @@
 
 </div>
 
-<!-- ══ PROSPECTOS ══ -->
 <div class="panel" id="panel-prospectos">
   <div class="filters">
     <button class="filter-btn active" onclick="filtrar('todos', this)">🦷 Todos</button>
@@ -842,11 +835,9 @@
   </div>
 </div>
 
-<!-- ══ GUIONES ══ -->
 <div class="panel" id="panel-guiones">
   <div class="section-title" style="margin-bottom:4px;">Scripts de contacto</div>
 
-  <!-- PRIMER CONTACTO con 2 versiones + inputs -->
   <div class="guion-card">
     <div class="guion-header" onclick="toggleGuion(this)">
       <span>💬 Primer contacto</span>
@@ -887,7 +878,6 @@ Le contacto de parte de la Facultad de Odontología de la UANL. Mi nombre es [AL
     </div>
   </div>
 
-  <!-- NO HA RESPONDIDO -->
   <div class="guion-card">
     <div class="guion-header" onclick="toggleGuion(this)">
       <span>🔁 No ha respondido</span>
@@ -903,7 +893,6 @@ Si ya no puede, con gusto le damos de baja para no molestarle más. 😊</div>
     </div>
   </div>
 
-  <!-- CONFIRMAR CITA -->
   <div class="guion-card">
     <div class="guion-header" onclick="toggleGuion(this)">
       <span>📅 Confirmar cita</span>
@@ -921,7 +910,6 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     </div>
   </div>
 
-  <!-- GUÍA DE MANEJO -->
   <div class="guion-card">
     <div class="guion-header" onclick="toggleGuion(this)">
       <span>📌 Guía de manejo de prospectos</span>
@@ -959,7 +947,6 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
 
 </div>
 
-<!-- ══ POLÍTICAS ══ -->
 <div class="panel" id="panel-politicas">
   <div class="section-title" style="margin-bottom:4px;">Políticas del sistema</div>
 
@@ -1014,7 +1001,6 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
   </div>
 </div>
 
-<!-- ══ PAGO ══ -->
 <div class="panel" id="panel-pago">
   <div class="section-title" style="margin-bottom:4px;">Realizar pago</div>
   <div style="padding: 0 16px;">
@@ -1039,7 +1025,6 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
   </div>
 </div>
 
-<!-- BOTTOM NAV -->
 <nav class="bottom-nav">
   <button class="nav-item active" onclick="showPanel('inicio', this)">
     <span class="nav-icon">🏠</span>
@@ -1063,7 +1048,6 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
   </button>
 </nav>
 
-<!-- BOTTOM SHEET -->
 <div class="overlay" id="overlay" onclick="cerrarSheet()"></div>
 <div class="bottom-sheet" id="bottom-sheet">
   <div class="sheet-handle"></div>
@@ -1074,7 +1058,6 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
   <div class="sheet-body" id="sheet-body"></div>
 </div>
 
-<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1106,7 +1089,7 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     if (!extr) return 0;
     const s = String(extr).toLowerCase();
     if (s.includes('tres') || s.includes('3') || s.includes('más') || s.includes('mas')) return 3;
-    if (s.includes('dos') || s === '2') return 2;
+    if (s.includes('dos') || s === '2') return 1;
     if (s.includes('una') || s === '1') return 1;
     return parseInt(extr) || 1; // número directo o default 1
   }
@@ -1158,7 +1141,12 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     const horario = p.horario || 'A definir';
     const folio  = (p.expediente || '').includes('primera') ? '🆕 Sin folio' : '📄 Con folio';
 
-    const badgeFoto    = p.foto ? '<span class="badge-foto">📷 Con foto</span>' : '';
+    let numFotos = 0;
+    if (p.foto) {
+      numFotos = p.foto.split('|').filter(u => u.trim() !== '').length;
+    }
+    const badgeFoto = numFotos > 0 ? `<span class="badge-foto">📷 ${numFotos > 1 ? numFotos + ' Fotos' : 'Con foto'}</span>` : '';
+    
     const badgeAparato = tieneAparato(p.aparato) ? '<span class="badge-foto" style="background:rgba(251,191,36,0.15);color:#FCD34D;border-color:rgba(251,191,36,0.3);">🦷 Aparato</span>' : '';
     const badgeEstado = p.estado === 'VIP'
       ? `<span class="badge badge-red">🔴 PREMIUM</span>`
@@ -1171,7 +1159,7 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     const cardClase = p.estado === 'VIP' ? 'vip' : p.estado === 'Sabado' ? 'sabado' : 'disponible';
 
     return `
-      <div class="card ${cardClase}" style="animation-delay:${delay}ms" onclick="abrirSheet(${JSON.stringify(p).replace(/"/g, '&quot;')})">
+      <div class="card ${cardClase}" style="animation-delay:${delay}ms" onclick="abrirSheet(${JSON.stringify(p).replace(/"/g, '"')})">
         <div class="card-top">
           <div class="card-id">${icono} ${p.id}</div>
           <div class="card-badges">${badgeEstado}${badgeFoto}${badgeAparato}</div>
@@ -1318,18 +1306,6 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     const horario = p.horario || 'A definir';
     const folio  = (p.expediente || '').includes('primera') ? 'No tiene folio' : 'Sí tiene folio';
 
-    function getDriveImgUrl(url) {
-      if (!url || url.toString().trim() === '') return null;
-      const s = url.toString().trim();
-      if (s.includes('lh3.googleusercontent.com')) return s;
-      const m1 = s.match(/\/d\/([a-zA-Z0-9_-]{25,})/);
-      if (m1) return 'https://lh3.googleusercontent.com/d/' + m1[1];
-      const m2 = s.match(/[?&]id=([a-zA-Z0-9_-]{25,})/);
-      if (m2) return 'https://lh3.googleusercontent.com/d/' + m2[1];
-      return s.startsWith('http') ? s : null;
-    }
-    const fotoUrl = getDriveImgUrl(p.foto);
-
     const esGratis  = p.estado === 'Sabado';
     const esPremium = p.estado === 'VIP';
     const btnClass  = esPremium ? 'cta-premium' : esGratis ? 'cta-gratis' : 'cta-primary';
@@ -1337,6 +1313,28 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
 
     const aparatoLabel = tieneAparato(p.aparato) ? ' · 🦷 Aparato' : '';
     document.getElementById('sheet-titulo').textContent = p.id + ' — ' + trat + aparatoLabel;
+
+    // -- NUEVO CÓDIGO PARA PROCESAR MÚLTIPLES FOTOS --
+    let fotosHtml = '';
+    if (p.foto) {
+      const fotosArr = p.foto.split('|').map(u => u.trim()).filter(u => u.length > 0);
+      fotosArr.forEach((urlRaw, index) => {
+        // Asegurarnos de que el link sea HTTPS seguro para Google Drive
+        let safeUrl = urlRaw.replace('http:', 'https:');
+        const matchId = safeUrl.match(/[?&]id=([a-zA-Z0-9_-]{25,})/);
+        if (matchId) {
+          safeUrl = 'https://drive.google.com/uc?export=view&id=' + matchId[1];
+        }
+        
+        fotosHtml += `
+        <div style="margin-top:12px;border-radius:12px;overflow:hidden;cursor:pointer;position:relative;" onclick="abrirLightbox('${safeUrl}')">
+          <img src="${safeUrl}" alt="Foto ${index + 1}" style="width:100%;max-height:220px;object-fit:cover;border-radius:12px;display:block;"
+               onerror="this.parentElement.style.display='none'">
+          <div style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.6);color:white;font-size:11px;padding:4px 8px;border-radius:6px;">🔍 Ampliar</div>
+          <div style="position:absolute;top:8px;left:8px;background:rgba(14,165,233,0.8);color:white;font-size:11px;font-weight:700;padding:4px 8px;border-radius:6px;">📷 Foto ${index + 1} de ${fotosArr.length}</div>
+        </div>`;
+      });
+    }
 
     document.getElementById('sheet-body').innerHTML = `
       <div class="sheet-row"><span class="key">Tratamiento</span><span class="val">${trat}</span></div>
@@ -1351,13 +1349,9 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
       ${tieneAparato(p.aparato) ? `<div class="sheet-row"><span class="key">Requiere aparato</span><span class="val" style="color:#FCD34D;">🦷 Sí — incluido en el precio</span></div>` : ''}
       <div class="sheet-row"><span class="key">Estado</span><span class="val" style="color:${esPremium ? '#F87171' : esGratis ? '#FCD34D' : '#34D399'}">${p.estado}</span></div>
       <div class="sheet-row"><span class="key">Inversión</span><span class="val" style="color:${esPremium ? '#F87171' : esGratis ? '#FCD34D' : '#34D399'}; font-size:20px; font-family:'Syne',sans-serif;">${precio.monto}</span></div>
-      ${fotoUrl ? `
-      <div style="margin-top:12px;border-radius:12px;overflow:hidden;cursor:pointer;position:relative;" onclick="abrirLightbox('${fotoUrl}')">
-        <img src="${fotoUrl}" alt="Foto del caso" style="width:100%;max-height:220px;object-fit:cover;border-radius:12px;display:block;"
-             onerror="this.parentElement.style.display='none'">
-        <div style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.6);color:white;font-size:11px;padding:4px 8px;border-radius:6px;">🔍 Toca para ampliar</div>
-        <div style="position:absolute;top:8px;left:8px;background:rgba(14,165,233,0.8);color:white;font-size:11px;font-weight:700;padding:4px 8px;border-radius:6px;">📷 Foto del caso</div>
-      </div>` : ''}
+      
+      ${fotosHtml}
+
       <div class="warning-box" style="margin-top:12px;">
         ${esGratis
           ? '🎁 Prospecto de sábado gratuito. Al tocar el botón se abrirá WhatsApp para confirmar disponibilidad con el operador.'
@@ -1468,13 +1462,20 @@ Quiero apartar el siguiente prospecto de sábado gratuito:
   cargarProspectos();
   function abrirLightbox(url) {
     const lb = document.getElementById('lightbox');
-    document.getElementById('lightbox-img').src = url;
-    lb.style.opacity = '1'; lb.style.pointerEvents = 'all';
+    // Si no tienes el elemento lightbox creado en el HTML, puedes quitar la función o añadir un div con id="lightbox"
+    if(lb) {
+        document.getElementById('lightbox-img').src = url;
+        lb.style.opacity = '1'; lb.style.pointerEvents = 'all';
+    } else {
+        window.open(url, '_blank'); // Abre la imagen en una nueva pestaña si no hay lightbox
+    }
   }
   function cerrarLightbox() {
     const lb = document.getElementById('lightbox');
-    lb.style.opacity = '0'; lb.style.pointerEvents = 'none';
-    document.getElementById('lightbox-img').src = '';
+    if(lb) {
+        lb.style.opacity = '0'; lb.style.pointerEvents = 'none';
+        document.getElementById('lightbox-img').src = '';
+    }
   }
 
   // ── FLUJO SOLICITAR ──────────────────────────────────────────
@@ -1573,12 +1574,10 @@ Quiero apartar el siguiente prospecto de sábado gratuito:
   });
 </script>
 
-<!-- MODAL SOLICITAR -->
 <div class="modal-overlay" id="modalSolicitar">
   <div class="modal-box">
     <div class="modal-handle"></div>
 
-    <!-- PASO 1: Nombre -->
     <div id="paso1">
       <div class="step-indicator">
         <div class="step active" id="si1"></div>
@@ -1593,7 +1592,6 @@ Quiero apartar el siguiente prospecto de sábado gratuito:
       </button>
     </div>
 
-    <!-- PASO 2: Datos de pago -->
     <div id="paso2" style="display:none">
       <div class="step-indicator">
         <div class="step done"></div>
@@ -1628,7 +1626,6 @@ Quiero apartar el siguiente prospecto de sábado gratuito:
       <button onclick="cerrarModalSolicitar()" style="width:100%;background:none;border:none;color:#64748B;padding:12px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;margin-top:4px;">Cancelar</button>
     </div>
 
-    <!-- PASO 3: Subir comprobante -->
     <div id="paso3" style="display:none">
       <div class="step-indicator">
         <div class="step done"></div>
@@ -1653,7 +1650,6 @@ Quiero apartar el siguiente prospecto de sábado gratuito:
       </button>
     </div>
 
-    <!-- ÉXITO -->
     <div id="pasoExito" style="display:none">
       <div class="success-screen">
         <div class="success-icon">✅</div>

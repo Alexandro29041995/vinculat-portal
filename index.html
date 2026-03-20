@@ -490,6 +490,7 @@
     font-weight: 700;
     cursor: pointer;
     font-family: 'DM Sans', sans-serif;
+    margin-top: 8px;
     transition: all 0.2s;
     display: flex;
     align-items: center;
@@ -974,6 +975,16 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
 
   <div class="politica-item">
     <div class="politica-header" onclick="togglePolitica(this)">
+      <span>🔴 Casos VIP (Endodoncia)</span><span>▾</span>
+    </div>
+    <div class="politica-body">
+      Los casos de endodoncia son verificados directamente por el operador con foto e INE del paciente. Se publican en la sección Premium una vez verificados. El primero en pagar $1,500 y confirmar recibe el caso con foto, INE y datos completos.<br><br>
+      <strong style="color:white;">Nota:</strong> Si el paciente requiere de otra endodoncia adicional (si tiene para más), el costo será de <strong>$1,000 extra</strong> por cada endodoncia adicional.
+    </div>
+  </div>
+
+  <div class="politica-item">
+    <div class="politica-header" onclick="togglePolitica(this)">
       <span>🔄 Garantía de reposición</span><span>▾</span>
     </div>
     <div class="politica-body">
@@ -996,15 +1007,6 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     </div>
     <div class="politica-body">
       Los prospectos se asignan por orden de pago. El primero en pagar y enviar comprobante recibe el prospecto. No hay reservas sin pago confirmado. Los datos del paciente se desbloquean solo después de que el operador valide tu pago.
-    </div>
-  </div>
-
-  <div class="politica-item">
-    <div class="politica-header" onclick="togglePolitica(this)">
-      <span>🔴 Casos VIP (Endodoncia)</span><span>▾</span>
-    </div>
-    <div class="politica-body">
-      Los casos de endodoncia son verificados directamente por el operador con foto e INE del paciente. Se publican en la sección Premium una vez verificados. El primero en pagar $1,500 y confirmar recibe el caso con foto, INE y datos completos.
     </div>
   </div>
 </div>
@@ -1126,13 +1128,13 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     // 2. SABADO GRATIS
     if (estado === 'Sabado') return { monto: 'GRATIS', clase: 'gratis' };
 
-    // 3. APARATOS (Aplica a todas las edades: $600 por la mañana, $300 otros horarios)
+    // 3. APARATOS Y PRÓTESIS CON EXTRACCIONES
     let reqAparato = tieneAparato(aparato, trat);
     let puedeManana = /mañana|mañanas|\bam\b/i.test(h);
     
     if (reqAparato) {
-      if (puedeManana) return { monto: '$600', clase: 'normal' };
-      return { monto: '$300', clase: 'normal' };
+      if (puedeManana) return { monto: '$' + PRECIOS.aparato_manana.toLocaleString(), clase: 'normal' };
+      return { monto: '$' + PRECIOS.aparato.toLocaleString(), clase: 'normal' };
     }
 
     // Lógicas extendidas para detectar tratamientos específicos
@@ -1157,9 +1159,12 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
       return { monto: '$' + PRECIOS.infantil_tarde.toLocaleString(), clase: 'normal' };
     }
 
-    // 6. EXTRACCIONES
+    // 6. EXTRACCIONES (Solas o acompañadas de prótesis)
     const n = contarExtracciones(extr);
-    if (t.includes('extrac') || t.includes('sacar') || t.includes('muela') || t.includes('juicio')) {
+    let esExtraccion = t.includes('extrac') || t.includes('sacar') || t.includes('muela') || t.includes('juicio');
+    let esProtesisConExtraccion = (t.includes('prótesis') || t.includes('protesis') || t.includes('dentadura')) && n > 0;
+
+    if (esExtraccion || esProtesisConExtraccion) {
       if (n >= 3) return { monto: '$' + PRECIOS.extraccion_3.toLocaleString(), clase: 'normal' };
       if (n >= 2) return { monto: '$' + PRECIOS.extraccion_2.toLocaleString(), clase: 'normal' };
     }
@@ -1196,8 +1201,22 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     if (tLower.includes('infantil') || tLower.includes('menor')) {
       return 'Infantil';
     }
+
+    let n = contarExtracciones(extracciones);
+
+    // Lógica para Prótesis + Extracción
+    if (tLower.includes('prótesis') || tLower.includes('protesis') || tLower.includes('dentadura')) {
+      if (n > 0) {
+        let label = String(extracciones || '').trim();
+        if (label && label.length < 15 && !label.toLowerCase().includes('no estoy')) {
+            return `Extracción / Prótesis (${label})`;
+        }
+        return `Extracción / Prótesis (${n})`;
+      }
+      return 'Prótesis / Dentadura';
+    }
+
     if (tLower.includes('extracci') || tLower.includes('sacar') || tLower.includes('muela') || tLower.includes('juicio')) {
-      let n = contarExtracciones(extracciones);
       if (n > 1) {
         let label = String(extracciones || '').trim();
         if (label && label.length < 15 && !label.toLowerCase().includes('no estoy')) {

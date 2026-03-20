@@ -576,6 +576,7 @@
   .loading-state {
     padding: 40px 20px;
     text-align: center;
+    margin-top: 20px;
   }
   .spinner {
     width: 40px; height: 40px;
@@ -979,7 +980,8 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     </div>
     <div class="politica-body">
       Los casos de endodoncia son verificados directamente por el operador con foto e INE del paciente. Se publican en la sección Premium una vez verificados. El primero en pagar $1,500 y confirmar recibe el caso con foto, INE y datos completos.<br><br>
-      <strong style="color:white;">Nota:</strong> Si el paciente requiere de otra endodoncia adicional (si tiene para más), el costo será de <strong>$1,000 extra</strong> por cada endodoncia adicional.
+      <strong style="color:white;">Nota:</strong> Si el paciente requiere de otra endodoncia (si tiene para más), el costo será de <strong>$1,000 extra</strong> por cada tratamiento adicional.<br><br>
+      Adquirir la segunda endodoncia es totalmente <strong>opcional</strong>. Si decides realizar solo una, la otra se le asignará a un compañero, pero al ser el primer alumno asignado al caso, <strong>siempre tendrás la prioridad</strong> para decidir si deseas tomar ambas o solo una.
     </div>
   </div>
 
@@ -1079,7 +1081,6 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
   const API_URL = 'https://script.google.com/macros/s/AKfycbwPDQoVUqbrJwob52woIh2Kg2DoV8Z3z5JAY6-rOg8Tnpl71AO5y2wfPYQAfDjcoCdICw/exec';
   const WHATSAPP = '528126026552'; 
   const CLABE    = '728969000084218503'; 
-  // Ampliamos los precios base para abarcar los distintos tratamientos
   let PRECIOS = { vip:1500, infantil_manana:200, infantil_tarde:130, extraccion_2:260, extraccion_3:390, aparato:300, aparato_manana:600, general:130, blanqueamiento:1500, mantenedor:320, corona_acero:285 };
 
   let todosLosProspectos = [];
@@ -1099,13 +1100,10 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
   // ── PRECIO POR TRATAMIENTO ──
   function tieneAparato(val, trat) {
     const t = String(trat || '').toLowerCase();
-    // Si el nombre del tratamiento incluye palabras clave de aparatos
     if (t.includes('aparato') || t.includes('ortodoncia') || t.includes('bracket') || t.includes('braquet')) return true;
-    
     if (!val) return false;
     if (val === true) return true;
     const s = String(val).toLowerCase().trim();
-    // Si la columna aparato dice "sí", "si", "requiere", "true"
     return s === 'true' || s.charAt(0) === 's' || s.includes('requiere');
   }
 
@@ -1122,13 +1120,9 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     const t = String(trat || '').toLowerCase();
     const h = String(horario || '').toLowerCase();
 
-    // 1. VIP / PREMIUM Automático
     if (esCasoPremium(trat, estado)) return { monto: '$' + PRECIOS.vip.toLocaleString(), clase: 'premium' };
-
-    // 2. SABADO GRATIS
     if (estado === 'Sabado') return { monto: 'GRATIS', clase: 'gratis' };
 
-    // 3. APARATOS Y PRÓTESIS CON EXTRACCIONES
     let reqAparato = tieneAparato(aparato, trat);
     let puedeManana = /mañana|mañanas|\bam\b/i.test(h);
     
@@ -1137,14 +1131,12 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
       return { monto: '$' + PRECIOS.aparato.toLocaleString(), clase: 'normal' };
     }
 
-    // Lógicas extendidas para detectar tratamientos específicos
     if (t.includes('blanquea')) return { monto: '$' + PRECIOS.blanqueamiento.toLocaleString(), clase: 'normal' };
     if (t.includes('mantenedor')) return { monto: '$' + PRECIOS.mantenedor.toLocaleString(), clase: 'normal' };
     
     let esInfantil = t.includes('infantil') || t.includes('niño') || t.includes('pedi') || t.includes('menor');
     if (t.includes('corona') && (t.includes('acero') || esInfantil)) return { monto: '$' + PRECIOS.corona_acero.toLocaleString(), clase: 'normal' };
 
-    // 4. LÓGICA INFANTIL 8 a 12 AÑOS (Ya se validaron aparatos antes)
     let edadNum = parseInt(edad) || 0;
     let es8a12 = edadNum >= 8 && edadNum <= 12;
 
@@ -1153,13 +1145,11 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
       return { monto: '$' + PRECIOS.infantil_tarde.toLocaleString(), clase: 'normal' };
     }
 
-    // 5. DEMÁS INFANTILES (fuera del rango o sin especificar)
     if (esInfantil) {
       if (puedeManana) return { monto: '$' + PRECIOS.infantil_manana.toLocaleString(), clase: 'normal' };
       return { monto: '$' + PRECIOS.infantil_tarde.toLocaleString(), clase: 'normal' };
     }
 
-    // 6. EXTRACCIONES (Solas o acompañadas de prótesis)
     const n = contarExtracciones(extr);
     let esExtraccion = t.includes('extrac') || t.includes('sacar') || t.includes('muela') || t.includes('juicio');
     let esProtesisConExtraccion = (t.includes('prótesis') || t.includes('protesis') || t.includes('dentadura')) && n > 0;
@@ -1169,7 +1159,6 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
       if (n >= 2) return { monto: '$' + PRECIOS.extraccion_2.toLocaleString(), clase: 'normal' };
     }
 
-    // 7. GENERAL (Limpieza, periodoncia, resina, etc)
     return { monto: '$' + PRECIOS.general.toLocaleString(), clase: 'normal' };
   }
 
@@ -1190,7 +1179,6 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     return '🦷';
   }
 
-  // ── FUNCIÓN PARA FORMATEAR TÍTULOS DE TRATAMIENTO ──
   function formatearTratamiento(tratamiento, extracciones) {
     let t = String(tratamiento || '').replace(/\.$/, '').trim();
     let tLower = t.toLowerCase();
@@ -1204,7 +1192,6 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
 
     let n = contarExtracciones(extracciones);
 
-    // Lógica para Prótesis + Extracción
     if (tLower.includes('prótesis') || tLower.includes('protesis') || tLower.includes('dentadura')) {
       if (n > 0) {
         let label = String(extracciones || '').trim();
@@ -1260,15 +1247,12 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     const btnText  = p.estado === 'Sabado' ? '🎁 Apartar' : 'Adquirir →';
     const cardClase = isPrem ? 'vip' : p.estado === 'Sabado' ? 'sabado' : 'disponible';
 
-    // Construcción de chips de información debajo del título
     let metaChips = `
       <div class="meta-chip">🕐 ${horario}</div>
       <div class="meta-chip">${folio}</div>
     `;
 
-    if (p.edad) {
-      metaChips += `<div class="meta-chip">👤 ${p.edad} años</div>`;
-    }
+    if (p.edad) metaChips += `<div class="meta-chip">👤 ${p.edad} años</div>`;
 
     if (tieneAparato(p.aparato, p.tratamiento)) {
       metaChips += `<div class="meta-chip" style="color:#FCD34D; border-color:rgba(251,191,36,0.3);">⚙️ Requiere aparato</div>`;
@@ -1300,7 +1284,6 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
       </div>`;
   }
 
-  // ── CARGAR PROSPECTOS ──
   async function cargarProspectos() {
     const btn  = document.getElementById('sync-btn');
     btn.classList.add('loading');
@@ -1320,7 +1303,6 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     }
   }
 
-  // ── RENDER ──
   function renderTodo() {
     const vips        = todosLosProspectos.filter(p => esCasoPremium(p.tratamiento, p.estado));
     const disponibles = todosLosProspectos.filter(p => p.estado === 'Disponible' && !esCasoPremium(p.tratamiento, p.estado));
@@ -1413,7 +1395,6 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
       });
     }
 
-    // Configurar botones dinámicos en la ventana inferior
     let botonesHtml = '';
     if (esGratis) {
       botonesHtml = `<button class="sheet-cta cta-gratis" onclick="abrirWhatsAppGratis('${id}')">🎁 Apartar — preguntar por WhatsApp</button>`;
@@ -1423,6 +1404,21 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
         <div style="display:flex; flex-direction:column; gap:8px; margin-top: 14px;">
           <button class="sheet-cta" style="background:#25D366; color:white; margin-top:0; box-shadow: 0 4px 12px rgba(37,211,102,0.3);" onclick="abrirWhatsAppDisponibilidad('${id}')">💬 Preguntar disponibilidad</button>
           <button class="sheet-cta ${btnPremClass}" style="margin-top:0;" onclick="cerrarSheet(); solicitarProspecto('${id}')">💳 Pagar prospecto · ${precio.monto}</button>
+        </div>
+      `;
+    }
+
+    // AVISO IMPORTANTE PARA CASOS PREMIUM
+    let warningEspecial = '';
+    if (esPremium) {
+      warningEspecial = `
+        <div style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.3); border-radius:12px; padding:14px; margin-top:16px;">
+          <div style="font-size:12px; font-weight:800; color:#FCD34D; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">⚠️ Importante antes de adquirir</div>
+          <div style="font-size:12px; color:#CBD5E1; line-height:1.6;">
+            • Revisa detenidamente las <strong>fotos y el horario preferido</strong> para confirmar que este caso te interesa y se ajusta a tu tiempo.<br><br>
+            • <strong>Para conservar tu garantía:</strong> Contacta al paciente lo antes posible (si ya es noche, a primera hora de la mañana siguiente).<br><br>
+            • Si el prospecto pierde el interés o no asiste, tu garantía está segura: se te <strong>asignará otro prospecto</strong> (ya sea otra endodoncia o tratamientos disponibles equivalentes). Recuerda que no hay devoluciones en efectivo, solo reposición.
+          </div>
         </div>
       `;
     }
@@ -1439,6 +1435,7 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
       <div class="sheet-row"><span class="key">Expediente</span><span class="val">${folio}</span></div>
       <div class="sheet-row"><span class="key">Inversión</span><span class="val" style="color:var(--green); font-size:20px;">${precio.monto}</span></div>
       ${fotosHtml}
+      ${warningEspecial}
       ${botonesHtml}
     `;
 
@@ -1451,7 +1448,6 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     document.getElementById('bottom-sheet').classList.remove('open');
   }
 
-  // ── WHATSAPP ──
   function abrirWhatsAppGratis(id) {
     const p = todosLosProspectos.find(x => String(x.id).trim() === String(id).trim());
     if(!p) return;
@@ -1468,7 +1464,6 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
   }
 
-  // ── UTILS ──
   function showPanel(id, el) {
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     document.getElementById('panel-' + id).classList.add('active');

@@ -1574,47 +1574,75 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     document.getElementById('paso3').style.display = 'block';
   }
 
-  function previsualizarComprobante(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      comprobanteB64 = e.target.result;
-      const preview = document.getElementById('previewImg');
-      preview.src = comprobanteB64;
-      preview.style.display = 'block';
-      document.getElementById('btnEnviar').disabled = false;
-    };
-    reader.readAsDataURL(file);
+ // ── HELPER: Comprime la imagen antes de enviarla ──────────────
+  function comprimirImagenParaEnvio(file) {
+    return new Promise(function(resolve, reject) {
+      var maxKB = 150;
+      var maxPx = 1200;
+      var img = new Image();
+      var objectUrl = URL.createObjectURL(file);
+      img.onload = function() {
+        URL.revokeObjectURL(objectUrl);
+        var escala = 1;
+        if (img.width > maxPx || img.height > maxPx) {
+          escala = Math.min(maxPx / img.width, maxPx / img.height);
+        }
+        var w = Math.round(img.width * escala);
+        var h = Math.round(img.height * escala);
+        var canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        var calidad = 0.75;
+        var resultado = canvas.toDataURL('image/jpeg', calidad);
+        while (resultado.length > maxKB * 1024 * 1.37 && calidad > 0.2) {
+          calidad -= 0.1;
+          resultado = canvas.toDataURL('image/jpeg', calidad);
+        }
+        resolve(resultado);
+      };
+      img.onerror = function() { URL.revokeObjectURL(objectUrl); reject(new Error('Error leyendo imagen')); };
+      img.src = objectUrl;
+    });
   }
 
- async function enviarSolicitud() {
+  async function previsualizarComprobante(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const preview = document.getElementById('previewImg');
+    preview.src = URL.createObjectURL(file);
+    preview.style.display = 'block';
+    try {
+      comprobanteB64 = await comprimirImagenParaEnvio(file);
+      document.getElementById('btnEnviar').disabled = false;
+    } catch(err) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        comprobanteB64 = e.target.result;
+        document.getElementById('btnEnviar').disabled = false;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  async function enviarSolicitud() {
     const btn = document.getElementById('btnEnviar');
     const txt = document.getElementById('btnEnviarTxt');
     btn.disabled = true;
     txt.textContent = 'Enviando...';
-    
-    const pc = getPrecio(prospectoSeleccionado.tratamiento, prospectoSeleccionado.estado, prospectoSeleccionado.extracciones, prospectoSeleccionado.horario, prospectoSeleccionado.aparato, prospectoSeleccionado.edad);
+    const pc  = getPrecio(prospectoSeleccionado.tratamiento, prospectoSeleccionado.estado, prospectoSeleccionado.extracciones, prospectoSeleccionado.horario, prospectoSeleccionado.aparato, prospectoSeleccionado.edad);
     const ref = 'VIN-' + String(prospectoSeleccionado.id).padStart(3,'0');
-    
     try {
-      // Creamos un "paquete" con los datos completos, incluyendo la imagen entera
       const payload = JSON.stringify({
-        accion: 'registrarSolicitud',
-        id: prospectoSeleccionado.id,
-        alumno: nombreAlumnoSolicitud,
-        telAlumno: telefonoAlumnoSolicitud,
-        ref: ref,
-        monto: pc.monto,
-        comprobante: comprobanteB64 // Aquí ya no cortamos la imagen
+        accion:      'registrarSolicitud',
+        id:          prospectoSeleccionado.id,
+        alumno:      nombreAlumnoSolicitud,
+        telAlumno:   telefonoAlumnoSolicitud,
+        ref:         ref,
+        monto:       pc.monto,
+        comprobante: comprobanteB64
       });
-
-      // Lo enviamos mediante método POST
-      await fetch(API_URL, { 
-        method: 'POST',
-        body: payload
-      });
-
+      await fetch(API_URL, { method: 'POST', body: payload });
       document.getElementById('paso3').style.display = 'none';
       document.getElementById('pasoExito').style.display = 'block';
       await cargarProspectos();
@@ -1624,7 +1652,6 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
       alert('Error al enviar la solicitud.');
     }
   }
-
   cargarProspectos();
 </script>
 

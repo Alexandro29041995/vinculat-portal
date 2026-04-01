@@ -1404,6 +1404,7 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
         <div style="display:flex; flex-direction:column; gap:8px; margin-top: 14px;">
           <button class="sheet-cta" style="background:#25D366; color:white; margin-top:0; box-shadow: 0 4px 12px rgba(37,211,102,0.3);" onclick="abrirWhatsAppDisponibilidad('${id}')">💬 Preguntar disponibilidad</button>
           <button class="sheet-cta ${btnPremClass}" style="margin-top:0;" onclick="cerrarSheet(); solicitarProspecto('${id}')">💳 Pagar prospecto · ${precio.monto}</button>
+          <button class="sheet-cta" style="background:rgba(245,158,11,0.15);color:#FCD34D;border:1px solid rgba(245,158,11,0.4);margin-top:0;" onclick="cerrarSheet(); abrirModalGarantia('${id}', '${trat}')">🔄 Solicitar garantía</button>
         </div>
       `;
     }

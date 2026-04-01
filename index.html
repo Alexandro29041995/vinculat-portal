@@ -1654,6 +1654,100 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     }
   }
   cargarProspectos();
+
+  // ── FLUJO GARANTÍA ──
+  let garantiaProspectoId = '';
+  let garantiaTratamiento = '';
+  let garantiaNombreAlumno = '';
+  let garantiaTelefonoAlumno = '';
+  let garantiaFolioMalo = '';
+  let garantiaEvidenciaB64 = '';
+
+  function abrirModalGarantia(id, trat) {
+    garantiaProspectoId = id;
+    garantiaTratamiento = trat;
+    garantiaEvidenciaB64 = '';
+    document.getElementById('gInputNombre').value = '';
+    document.getElementById('gInputTelefono').value = '';
+    document.getElementById('gInputFolio').value = '';
+    document.getElementById('gPaso1').style.display = 'block';
+    document.getElementById('gPaso2').style.display = 'none';
+    document.getElementById('gPasoExito').style.display = 'none';
+    const gBtn = document.getElementById('gBtnEnviar');
+    if (gBtn) gBtn.disabled = true;
+    const gPreview = document.getElementById('gPreviewImg');
+    if (gPreview) { gPreview.style.display = 'none'; gPreview.src = ''; }
+    document.getElementById('modalGarantia').classList.add('active');
+  }
+
+  function cerrarModalGarantia() {
+    document.getElementById('modalGarantia').classList.remove('active');
+  }
+
+  function gIrPaso2() {
+    const nombre   = document.getElementById('gInputNombre').value.trim();
+    const telefono = document.getElementById('gInputTelefono').value.trim();
+    const folio    = document.getElementById('gInputFolio').value.trim();
+
+    document.getElementById('gInputNombre').style.borderColor   = '#1E3A6E';
+    document.getElementById('gInputTelefono').style.borderColor = '#1E3A6E';
+    document.getElementById('gInputFolio').style.borderColor    = '#1E3A6E';
+
+    if (!nombre)                        { document.getElementById('gInputNombre').style.borderColor   = '#EF4444'; return; }
+    if (!telefono || telefono.length < 10) { document.getElementById('gInputTelefono').style.borderColor = '#EF4444'; return; }
+    if (!folio)                         { document.getElementById('gInputFolio').style.borderColor    = '#EF4444'; return; }
+
+    garantiaNombreAlumno   = nombre;
+    garantiaTelefonoAlumno = telefono;
+    garantiaFolioMalo      = folio;
+
+    document.getElementById('gPaso1').style.display = 'none';
+    document.getElementById('gPaso2').style.display = 'block';
+  }
+
+  async function gPrevisualizarEvidencia(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const preview = document.getElementById('gPreviewImg');
+    preview.src = URL.createObjectURL(file);
+    preview.style.display = 'block';
+    try {
+      garantiaEvidenciaB64 = await comprimirImagenParaEnvio(file);
+      document.getElementById('gBtnEnviar').disabled = false;
+    } catch(err) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        garantiaEvidenciaB64 = e.target.result;
+        document.getElementById('gBtnEnviar').disabled = false;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  async function gEnviarGarantia() {
+    const btn = document.getElementById('gBtnEnviar');
+    const txt = document.getElementById('gBtnEnviarTxt');
+    btn.disabled = true;
+    txt.textContent = 'Enviando...';
+    try {
+      const payload = JSON.stringify({
+        accion:      'solicitarGarantia',
+        idNuevo:     garantiaProspectoId,
+        tratamiento: garantiaTratamiento,
+        alumno:      garantiaNombreAlumno,
+        telAlumno:   garantiaTelefonoAlumno,
+        folioMalo:   garantiaFolioMalo,
+        evidencia:   garantiaEvidenciaB64
+      });
+      await fetch(API_URL, { method: 'POST', body: payload });
+      document.getElementById('gPaso2').style.display = 'none';
+      document.getElementById('gPasoExito').style.display = 'block';
+    } catch(e) {
+      btn.disabled = false;
+      txt.textContent = 'Enviar solicitud de garantía';
+      alert('Error al enviar. Intenta de nuevo.');
+    }
+  }
 </script>
 
 <div class="modal-overlay solicitar-overlay" id="modalSolicitar" onclick="if(event.target===this) cerrarModalSolicitar()">
@@ -1698,6 +1792,53 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
         <div class="modal-title">¡Solicitud enviada!</div>
         <div class="modal-subtitle">Validaremos el pago y te enviaremos los datos por WhatsApp.<br><br><strong>Ref: <span id="exitoRef" style="color:var(--gold)"></span></strong></div>
         <button onclick="cerrarModalSolicitar()" class="btn-solicitar-confirm" style="background:#1A2744;">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL GARANTÍA ── -->
+<div class="modal-overlay solicitar-overlay" id="modalGarantia" onclick="if(event.target===this) cerrarModalGarantia()">
+  <div class="modal-box solicitar-box">
+    <div class="modal-handle"></div>
+
+    <div id="gPaso1">
+      <div class="step-indicator"><div class="step active"></div><div class="step"></div><div class="step"></div></div>
+      <div class="modal-title">🔄 Solicitar Garantía</div>
+      <div class="modal-subtitle">Ingresa tus datos y el folio del prospecto que no respondió</div>
+      <input class="modal-input" id="gInputNombre" type="text" placeholder="Tu nombre completo..." autocomplete="off">
+      <input class="modal-input" id="gInputTelefono" type="tel" placeholder="Tu número de WhatsApp (10 dígitos)..." autocomplete="off">
+      <input class="modal-input" id="gInputFolio" type="text" placeholder="Folio / ID del prospecto que no respondió..." autocomplete="off" style="margin-bottom:10px;">
+      <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:12px;margin-bottom:16px;font-size:12px;color:#FCD34D;line-height:1.6;">
+        ⚠️ La garantía aplica cuando el prospecto asignado no respondió tras 24 h de contacto. En el siguiente paso deberás subir evidencia fotográfica.
+      </div>
+      <button class="btn-solicitar-confirm" onclick="gIrPaso2()">Continuar →</button>
+      <button onclick="cerrarModalGarantia()" style="width:100%;background:none;border:none;color:#64748B;padding:12px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;margin-top:4px;">Cancelar</button>
+    </div>
+
+    <div id="gPaso2" style="display:none">
+      <div class="step-indicator"><div class="step done"></div><div class="step active"></div><div class="step"></div></div>
+      <div class="modal-title">Sube la evidencia</div>
+      <div class="modal-subtitle" style="margin-bottom:10px;">La captura debe mostrar claramente:</div>
+      <div style="background:rgba(37,99,235,0.08);border:1px solid rgba(37,99,235,0.3);border-radius:10px;padding:12px;margin-bottom:14px;font-size:12px;color:#CBD5E1;line-height:1.8;">
+        📱 <strong style="color:white;">El número del prospecto sin guardar</strong> — que aparezca solo el número, no un nombre de contacto<br>
+        💬 <strong style="color:white;">El mensaje de cierre</strong> que le enviaste al prospecto
+      </div>
+      <div class="upload-zone" onclick="document.getElementById('gFileEvidencia').click()">
+        <input type="file" id="gFileEvidencia" accept="image/*" onchange="gPrevisualizarEvidencia(event)">
+        <div class="upload-text"><strong>Toca para seleccionar captura</strong></div>
+        <img id="gPreviewImg" class="upload-preview" style="display:none;">
+      </div>
+      <button class="btn-solicitar-confirm" id="gBtnEnviar" onclick="gEnviarGarantia()" disabled><span id="gBtnEnviarTxt">Enviar solicitud de garantía</span></button>
+      <button onclick="cerrarModalGarantia()" style="width:100%;background:none;border:none;color:#64748B;padding:12px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;margin-top:4px;">Cancelar</button>
+    </div>
+
+    <div id="gPasoExito" style="display:none">
+      <div style="text-align:center;padding:8px 0;">
+        <div style="font-size:56px;margin-bottom:16px;">✅</div>
+        <div class="modal-title">¡Garantía solicitada!</div>
+        <div class="modal-subtitle">Tu solicitud fue enviada. Revisaremos la evidencia y te asignaremos un nuevo prospecto lo antes posible.<br><br>Te notificaremos por WhatsApp cuando esté listo. 🦷</div>
+        <button onclick="cerrarModalGarantia()" class="btn-solicitar-confirm" style="background:#1A2744;margin-top:20px;">Cerrar</button>
       </div>
     </div>
   </div>

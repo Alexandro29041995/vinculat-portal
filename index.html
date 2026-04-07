@@ -1153,7 +1153,7 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     if (t.includes('cirugía') || t.includes('cirugia')) return { monto: '$' + PRECIOS.general.toLocaleString(), clase: 'normal' };
 
     const n = contarExtracciones(extr);
-    let esExtraccion = t.includes('extrac') || t.includes('sacar') || t.includes('muela') || t.includes('juicio');
+    let esExtraccion = (t.includes('extrac') || t.includes('sacar') || t.includes('muela')) && !t.includes('juicio');
     let esProtesisConExtraccion = (t.includes('prótesis') || t.includes('protesis') || t.includes('dentadura')) && n > 0;
 
     if (esExtraccion || esProtesisConExtraccion) {
@@ -1209,7 +1209,11 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
       return 'Cirugía';
     }
 
-    if (tLower.includes('extracci') || tLower.includes('sacar') || tLower.includes('muela') || tLower.includes('juicio')) {
+    if (tLower.includes('juicio') || tLower.includes('muela del juicio') || tLower.includes('muelas del juicio')) {
+      return 'Muelas del juicio';
+    }
+
+    if (tLower.includes('extracci') || tLower.includes('sacar') || tLower.includes('muela')) {
       if (n > 1) {
         let label = String(extracciones || '').trim();
         if (label && label.length < 15 && !label.toLowerCase().includes('no estoy')) {

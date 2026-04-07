@@ -1150,6 +1150,8 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
       return { monto: '$' + PRECIOS.infantil_tarde.toLocaleString(), clase: 'normal' };
     }
 
+    if (t.includes('cirugía') || t.includes('cirugia')) return { monto: '$' + PRECIOS.general.toLocaleString(), clase: 'normal' };
+
     const n = contarExtracciones(extr);
     let esExtraccion = t.includes('extrac') || t.includes('sacar') || t.includes('muela') || t.includes('juicio');
     let esProtesisConExtraccion = (t.includes('prótesis') || t.includes('protesis') || t.includes('dentadura')) && n > 0;
@@ -1201,6 +1203,10 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
         return `Extracción / Prótesis (${n})`;
       }
       return 'Prótesis / Dentadura';
+    }
+
+    if (tLower.includes('cirugía') || tLower.includes('cirugia')) {
+      return 'Cirugía';
     }
 
     if (tLower.includes('extracci') || tLower.includes('sacar') || tLower.includes('muela') || tLower.includes('juicio')) {

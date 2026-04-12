@@ -751,6 +751,31 @@
 .lightbox-close { position: absolute; top: 20px; right: 20px; background: none; border: none; color: white; font-size: 32px; cursor: pointer; line-height: 1; }
 
 /* NUEVO BOTÓN FLOTANTE WA */
+.cards-recientes-wrapper { position: relative; }
+.cards-recientes-wrapper::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0; height: 60px;
+  background: linear-gradient(to bottom, transparent, var(--navy));
+  pointer-events: none; z-index: 1;
+}
+.btn-ver-todos {
+  width: 100%; margin-top: 4px; padding: 16px; border-radius: 14px;
+  font-size: 15px; font-weight: 800; cursor: pointer; transition: all .2s;
+  background: linear-gradient(135deg, #2563EB, #0EA5E9);
+  border: none; color: white;
+  box-shadow: 0 4px 15px rgba(37,99,235,0.4);
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  animation: pulseBtn 2s ease-in-out infinite;
+}
+.btn-ver-todos:active { transform: scale(0.97); }
+@keyframes pulseBtn {
+  0%, 100% { box-shadow: 0 4px 15px rgba(37,99,235,0.4); }
+  50% { box-shadow: 0 4px 25px rgba(37,99,235,0.7); }
+}
+.recientes-aviso {
+  text-align: center; font-size: 12px; color: var(--amber);
+  font-weight: 600; margin-top: 2px; margin-bottom: 2px;
+}
 .float-wa { position: fixed; bottom: calc(80px + var(--safe-bottom)); right: 16px; background: #25D366; color: white; padding: 10px 16px; border-radius: 100px; font-weight: 700; font-size: 13px; text-decoration: none; box-shadow: 0 8px 20px rgba(37,211,102,0.4); z-index: 55; display: flex; align-items: center; gap: 8px; font-family: 'DM Sans', sans-serif; transition: transform 0.2s; }
 .float-wa:active { transform: scale(0.95); }
 </style>
@@ -799,16 +824,20 @@
     Últimos prospectos
     <span class="section-count" id="recientes-count">—</span>
   </div>
-  <div class="cards" id="cards-recientes">
-    <div class="loading-state" id="loading-inicio">
-      <div class="spinner"></div>
-      <div class="loading-text">Conectando con tu base de datos...</div>
-      <div style="margin-top:10px; font-size:12px; color:#2563EB; font-weight:600;" id="timer-inicio">⏳ Espera unos segundos...</div>
+  <div class="cards-recientes-wrapper">
+    <div class="cards" id="cards-recientes">
+      <div class="loading-state" id="loading-inicio">
+        <div class="spinner"></div>
+        <div class="loading-text">Conectando con tu base de datos...</div>
+        <div style="margin-top:10px; font-size:12px; color:#2563EB; font-weight:600;" id="timer-inicio">⏳ Espera unos segundos...</div>
+      </div>
     </div>
   </div>
 
-  <button onclick="showPanel('prospectos')" style="width:100%;margin-top:4px;padding:14px;background:rgba(37,99,235,0.12);border:1px solid rgba(37,99,235,0.3);border-radius:14px;color:#60A5FA;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;">
-    🦷 Ver lista completa de prospectos →
+  <div class="recientes-aviso" id="recientes-aviso"></div>
+
+  <button class="btn-ver-todos" onclick="showPanel('prospectos')" id="btn-ver-todos">
+    🦷 Ver los <span id="total-prospectos-count">—</span> prospectos disponibles →
   </button>
 
   <div style="margin-top:12px;background:linear-gradient(135deg,#0f3d1f,#145a28);border:1px solid #1a7a35;border-radius:16px;padding:18px 16px;">
@@ -1383,7 +1412,7 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
         </div>
       </div>` : '';
 
-    const recientes = todosLosProspectos.slice(0, 5); 
+    const recientes = todosLosProspectos.slice(0, 5);
     document.getElementById('recientes-count').textContent = recientes.length;
     const recDiv = document.getElementById('cards-recientes');
     if (recientes.length === 0) {
@@ -1391,6 +1420,16 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     } else {
       recDiv.innerHTML = recientes.map((p, i) => buildCard(p, i * 60)).join('');
     }
+
+    const totalCount = todosLosProspectos.length;
+    document.getElementById('total-prospectos-count').textContent = totalCount;
+    const avisoEl = document.getElementById('recientes-aviso');
+    if (totalCount > 5) {
+      avisoEl.textContent = '⚠️ Solo ves ' + recientes.length + ' de ' + totalCount + ' prospectos — toca el botón para ver todos';
+    } else {
+      avisoEl.textContent = '';
+    }
+
     renderFiltro();
   }
 

@@ -1679,7 +1679,9 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
   function abrirWhatsAppGratis(id) {
     const p = todosLosProspectos.find(x => String(x.id).trim() === String(id).trim());
     if(!p) return;
-    const msg = encodeURIComponent(`Hola, soy alumno 🦷\nQuiero apartar el prospecto de sábado gratuito:\n📋 *ID:* ${p.id}\n🔧 *Tratamiento:* ${p.tratamiento}\n🎁 *Inversión:* GRATIS`);
+    const vin = 'VIN-' + String(p.id).padStart(3,'0');
+    const tratFormateado = formatearTratamiento(p.tratamiento, p.extracciones);
+    const msg = encodeURIComponent(`Hola, soy alumno 🦷\nQuiero apartar el prospecto de sábado gratuito:\n📋 *Folio:* ${vin}\n🔧 *Tratamiento:* ${tratFormateado}\n🎁 *Inversión:* GRATIS`);
     window.open(`https://wa.me/${WHATSAPP}?text=${msg}`, '_blank');
   }
 
@@ -1688,7 +1690,8 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
     if(!p) return;
     const precio = getPrecio(p.tratamiento, p.estado, p.extracciones, p.horario, p.aparato, p.edad);
     const tratFormateado = formatearTratamiento(p.tratamiento, p.extracciones);
-    const msg = `Hola, soy alumno de la Facultad de Odontología UANL 🦷\n\nQuiero adquirir el siguiente prospecto:\n📋 *ID:* ${p.id}\n🔧 *Tratamiento:* ${tratFormateado}\n💰 *Inversión:* ${precio.monto}\n\n¿Está disponible? De ser así, por favor indícame los datos para realizar la transferencia y confirmar mi lugar. ✅`;
+    const vin = 'VIN-' + String(p.id).padStart(3,'0');
+    const msg = `Hola, soy alumno de la Facultad de Odontología UANL 🦷\n\nQuiero adquirir el siguiente prospecto:\n📋 *Folio:* ${vin}\n🔧 *Tratamiento:* ${tratFormateado}\n💰 *Inversión:* ${precio.monto}\n\n¿Está disponible? De ser así, por favor indícame los datos para realizar la transferencia y confirmar mi lugar. ✅`;
     window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
   }
 

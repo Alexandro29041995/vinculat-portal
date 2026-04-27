@@ -953,33 +953,23 @@ Le contacto de parte de la Facultad de Odontología de la UANL. Mi nombre es [AL
 
   <div class="guion-card">
     <div class="guion-header" onclick="toggleGuion(this)">
-      <span>🔁 No ha respondido</span>
+      <span>🔁 Sin respuesta / Cierre de seguimiento</span>
       <span>▾</span>
     </div>
     <div class="guion-body">
+      <div style="font-size:11px;font-weight:700;color:#F59E0B;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">📋 Primer seguimiento (2-3 días después)</div>
       <div class="guion-text">Buenas tardes, le escribo nuevamente de la Facultad de Odontología UANL.
 
 Hace unos días le contacté sobre su tratamiento de [TRATAMIENTO]. ¿Le sigue interesando atenderse?
 
-Si ya no puede, con gusto le damos de baja para no molestarle más. Si más adelante desea retomar su tratamiento, le invitamos a llenar nuevamente nuestro formulario de registro. 😊</div>
-      <button class="copy-btn" style="width:100%;justify-content:center;" onclick="copiar('Buenas tardes, le escribo nuevamente de la Facultad de Odontología UANL.\n\nHace unos días le contacté sobre su tratamiento. ¿Le sigue interesando atenderse?\n\nSi ya no puede, con gusto le damos de baja para no molestarle más. Si más adelante desea retomar su tratamiento, le invitamos a llenar nuevamente nuestro formulario de registro. 😊')">📋 Copiar mensaje</button>
-    </div>
-  </div>
+Si tiene dudas, le invito a escribirme. 😊</div>
+      <button class="copy-btn" style="width:100%;justify-content:center;margin-bottom:16px;" onclick="copiar('Buenas tardes, le escribo nuevamente de la Facultad de Odontología UANL.\n\nHace unos días le contacté sobre su tratamiento de [TRATAMIENTO]. ¿Le sigue interesando atenderse?\n\nSi tiene dudas, le invito a escribirme. 😊')">📋 Copiar mensaje</button>
 
-  <div class="guion-card">
-    <div class="guion-header" onclick="toggleGuion(this)">
-      <span>📅 Confirmar cita</span>
-      <span>▾</span>
-    </div>
-    <div class="guion-body">
-      <div class="guion-text">¡Perfecto! Le confirmo su cita:
+      <div style="font-size:11px;font-weight:700;color:#EF4444;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">🔚 Cierre (si no responde después de 5-7 días)</div>
+      <div class="guion-text">Buenas tardes. Debido a la falta de interés, voy a dar la oportunidad a otro paciente para la atención odontológica.
 
-📅 Día: [DÍA]
-🕐 Hora: [HORA]
-📍 Facultad de Odontología UANL
-
-Por favor llegue 10 minutos antes con una identificación oficial. Cualquier duda, aquí estoy. ✅</div>
-      <button class="copy-btn" style="width:100%;justify-content:center;" onclick="copiar('¡Perfecto! Le confirmo su cita:\n\n📅 Día: [DÍA]\n🕐 Hora: [HORA]\n📍 Facultad de Odontología UANL\n\nPor favor llegue 10 minutos antes con una identificación oficial. Cualquier duda, aquí estoy. ✅')">📋 Copiar mensaje</button>
+Si sigue interesado/a en recibir atención, por favor, vuelva a llenar el formulario. ¡Saludos!</div>
+      <button class="copy-btn" style="width:100%;justify-content:center;" onclick="copiar('Buenas tardes. Debido a la falta de interés, voy a dar la oportunidad a otro paciente para la atención odontológica.\n\nSi sigue interesado/a en recibir atención, por favor, vuelva a llenar el formulario. ¡Saludos!')">📋 Copiar mensaje de cierre</button>
     </div>
   </div>
 
@@ -2182,6 +2172,13 @@ Por favor llegue 10 minutos antes con una identificación oficial. Cualquier dud
       <div class="step-indicator"><div class="step done"></div><div class="step active"></div><div class="step"></div></div>
       <div class="modal-title">Realiza tu pago</div>
       <div class="modal-subtitle">Transfiere el monto exacto con esta referencia</div>
+
+      <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:12px;padding:12px;margin-bottom:16px;font-size:12px;color:#FDA29B;line-height:1.6;">
+        <strong style="color:#FECACA;">⚠️ Términos de garantía:</strong><br>
+        • No hay reembolsos en efectivo<br>
+        • Si el prospecto no asiste o no responde, tu garantía cubre <strong>reposición de prospecto</strong> de valor equivalente (endodoncia u otro tratamiento disponible)
+      </div>
+
       <div class="pago-box"><div class="pago-label">Monto</div><div class="pago-monto" id="pagoMonto">$130</div></div>
       <div class="pago-box"><div class="pago-label">Titular de la cuenta</div><div class="pago-value">Vinculat Odonto</div></div>
       <div class="pago-box"><div class="pago-label">Banco</div><div class="pago-value">Spin by STP</div></div>

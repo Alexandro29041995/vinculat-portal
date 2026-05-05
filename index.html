@@ -1182,49 +1182,81 @@ Si sigue interesado/a en recibir atención, por favor, vuelva a llenar el formul
   function getPrecio(trat, estado, extr, horario, aparato, edad) {
     const t = String(trat || '').toLowerCase();
     const h = String(horario || '').toLowerCase();
+    let montoNum = 0;
 
-    if (esCasoPremium(trat, estado)) return { monto: '$' + PRECIOS.vip.toLocaleString(), clase: 'premium' };
-    if (estado === 'Sabado' || estado === 'Gratis') return { monto: 'GRATIS', clase: 'gratis' };
+    if (esCasoPremium(trat, estado)) {
+      montoNum = PRECIOS.vip;
+      return { montoNumero: montoNum, monto: '$' + montoNum.toLocaleString(), clase: 'premium' };
+    }
+    if (estado === 'Sabado' || estado === 'Gratis') return { montoNumero: 0, monto: 'GRATIS', clase: 'gratis' };
 
     let reqAparato = tieneAparato(aparato, trat);
     let puedeManana = /mañana|mañanas|\bam\b/i.test(h);
-    
+
     if (reqAparato) {
-      if (puedeManana) return { monto: '$' + PRECIOS.aparato_manana.toLocaleString(), clase: 'normal' };
-      return { monto: '$' + PRECIOS.aparato.toLocaleString(), clase: 'normal' };
+      if (puedeManana) {
+        montoNum = PRECIOS.aparato_manana;
+        return { montoNumero: montoNum, monto: '$' + montoNum.toLocaleString(), clase: 'normal' };
+      }
+      montoNum = PRECIOS.aparato;
+      return { montoNumero: montoNum, monto: '$' + montoNum.toLocaleString(), clase: 'normal' };
     }
 
-    if (t.includes('blanquea')) return { monto: '$' + PRECIOS.blanqueamiento.toLocaleString(), clase: 'normal' };
-    if (t.includes('mantenedor')) return { monto: '$' + PRECIOS.mantenedor.toLocaleString(), clase: 'normal' };
-    
+    if (t.includes('blanquea')) {
+      montoNum = PRECIOS.blanqueamiento;
+      return { montoNumero: montoNum, monto: '$' + montoNum.toLocaleString(), clase: 'normal' };
+    }
+    if (t.includes('mantenedor')) {
+      montoNum = PRECIOS.mantenedor;
+      return { montoNumero: montoNum, monto: '$' + montoNum.toLocaleString(), clase: 'normal' };
+    }
+
     let esInfantil = t.includes('infantil') || t.includes('niño') || t.includes('pedi') || t.includes('menor');
-    if (t.includes('corona') && (t.includes('acero') || esInfantil)) return { monto: '$' + PRECIOS.corona_acero.toLocaleString(), clase: 'normal' };
+    if (t.includes('corona') && (t.includes('acero') || esInfantil)) {
+      montoNum = PRECIOS.corona_acero;
+      return { montoNumero: montoNum, monto: '$' + montoNum.toLocaleString(), clase: 'normal' };
+    }
 
     let edadNum = parseInt(edad) || 0;
     let es8a12 = edadNum >= 8 && edadNum <= 12;
 
     if (esInfantil && es8a12) {
-      if (puedeManana) return { monto: '$300', clase: 'normal' };
-      return { monto: '$' + PRECIOS.infantil_tarde.toLocaleString(), clase: 'normal' };
+      if (puedeManana) return { montoNumero: 300, monto: '$300', clase: 'normal' };
+      montoNum = PRECIOS.infantil_tarde;
+      return { montoNumero: montoNum, monto: '$' + montoNum.toLocaleString(), clase: 'normal' };
     }
 
     if (esInfantil) {
-      if (puedeManana) return { monto: '$' + PRECIOS.infantil_manana.toLocaleString(), clase: 'normal' };
-      return { monto: '$' + PRECIOS.infantil_tarde.toLocaleString(), clase: 'normal' };
+      if (puedeManana) {
+        montoNum = PRECIOS.infantil_manana;
+        return { montoNumero: montoNum, monto: '$' + montoNum.toLocaleString(), clase: 'normal' };
+      }
+      montoNum = PRECIOS.infantil_tarde;
+      return { montoNumero: montoNum, monto: '$' + montoNum.toLocaleString(), clase: 'normal' };
     }
 
-    if (t.includes('cirugía') || t.includes('cirugia')) return { monto: '$' + PRECIOS.general.toLocaleString(), clase: 'normal' };
+    if (t.includes('cirugía') || t.includes('cirugia')) {
+      montoNum = PRECIOS.general;
+      return { montoNumero: montoNum, monto: '$' + montoNum.toLocaleString(), clase: 'normal' };
+    }
 
     const n = contarExtracciones(extr);
     let esExtraccion = (t.includes('extrac') || t.includes('sacar') || t.includes('muela')) && !t.includes('juicio');
     let esProtesisConExtraccion = (t.includes('prótesis') || t.includes('protesis') || t.includes('dentadura')) && n > 0;
 
     if (esExtraccion || esProtesisConExtraccion) {
-      if (n >= 3) return { monto: '$' + PRECIOS.extraccion_3.toLocaleString(), clase: 'normal' };
-      if (n >= 2) return { monto: '$' + PRECIOS.extraccion_2.toLocaleString(), clase: 'normal' };
+      if (n >= 3) {
+        montoNum = PRECIOS.extraccion_3;
+        return { montoNumero: montoNum, monto: '$' + montoNum.toLocaleString(), clase: 'normal' };
+      }
+      if (n >= 2) {
+        montoNum = PRECIOS.extraccion_2;
+        return { montoNumero: montoNum, monto: '$' + montoNum.toLocaleString(), clase: 'normal' };
+      }
     }
 
-    return { monto: '$' + PRECIOS.general.toLocaleString(), clase: 'normal' };
+    montoNum = PRECIOS.general;
+    return { montoNumero: montoNum, monto: '$' + montoNum.toLocaleString(), clase: 'normal' };
   }
 
   function getIcono(tratamiento) {
@@ -2016,7 +2048,7 @@ Si sigue interesado/a en recibir atención, por favor, vuelva a llenar el formul
         alumno:      nombreAlumnoSolicitud,
         telAlumno:   telefonoAlumnoSolicitud,
         ref:         ref,
-        monto:       pc.monto,
+        monto:       pc.montoNumero,
         comprobante: comprobanteB64
       });
       await fetch(API_URL, { method: 'POST', body: payload });

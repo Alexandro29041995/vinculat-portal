@@ -78,6 +78,7 @@ var COL_FOTO          = 27;
 var COL_REF_PAGO      = 28;
 var COL_COMPROBANTE   = 29;
 var COL_TEL_ALUMNO    = 30;
+var COL_MONTO         = 31;
 
 
 function enviarAlertaVIP(e) {
@@ -132,6 +133,7 @@ function doGet(e) {
   if (accion === 'crearVIP')      return accionCrearVIP(e.parameter, sheet);
   if (accion === 'getPrecios')    return accionGetPrecios();
   if (accion === 'setPrecios')    return accionSetPrecios(e.parameter);
+  if (accion === 'actualizarMonto') return accionActualizarMonto(e.parameter, sheet);
   if (accion === 'admin')         return leerTodosLosProspectos(sheet);
   if (accion === 'miscasos')      return leerMisCasos(e.parameter.tel, sheet);
   return leerProspectosPortal(sheet);
@@ -206,6 +208,21 @@ function accionCrearVIP(params, sheet) {
 }
 
 
+function accionActualizarMonto(params, sheet) {
+  var id = params.id;
+  var monto = params.monto;
+  var data = sheet.getRange('A1:AZ2000').getValues();
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][COL_ID - 1]).trim() === String(id).trim()) {
+      var row = i + 1;
+      sheet.getRange(row, COL_MONTO).setValue(monto);
+      return jsonOk({ ok: true });
+    }
+  }
+  return jsonOk({ ok: false, error: 'ID no encontrado' });
+}
+
+
 function accionRegistrarSolicitud(params, sheet) {
   var id        = params.id;
   var alumno    = params.alumno      || '';
@@ -235,8 +252,9 @@ function accionRegistrarSolicitud(params, sheet) {
       sheet.getRange(row, COL_ALUMNO).setValue(alumno);
       sheet.getRange(row, COL_TEL_ALUMNO).setValue(telAlumno);
       sheet.getRange(row, COL_FECHA_ASIG).setValue(new Date());
-      sheet.getRange(row, COL_PAGO).setValue('Pendiente validacion');
+      sheet.getRange(row, COL_PAGO).setValue('Pagado');
       sheet.getRange(row, COL_REF_PAGO).setValue(ref);
+      if (monto) sheet.getRange(row, COL_MONTO).setValue(monto);
       if (urlComprobante) {
         sheet.getRange(row, COL_COMPROBANTE).setValue(urlComprobante);
       } else if (compB64 && compB64.length > 100) {
@@ -283,10 +301,9 @@ function accionRegistrarSolicitudGratis(params, sheet) {
       sheet.getRange(row, COL_TEL_ALUMNO).setValue(telAlumno);
       sheet.getRange(row, COL_FECHA_ASIG).setValue(new Date());
       
-      // MARCADORES CLAVE: Ponemos el VIN real y lo etiquetamos como Apoyo
-      sheet.getRange(row, COL_PAGO).setValue('Pendiente (Apoyo)'); 
+      sheet.getRange(row, COL_PAGO).setValue('Apoyo');
       sheet.getRange(row, COL_REF_PAGO).setValue(vin);
-      
+
       var tratamiento = data[i][COL_TRATAMIENTO - 1] || '';
       MailApp.sendEmail(EMAIL_ADMIN(), 'Apoyo solicitado: ' + vin,
         'Un alumno reclamó un prospecto gratuito.\n\n' +
@@ -319,6 +336,8 @@ function leerMisCasos(tel, sheet) {
         horario:         data[i][COL_HORARIO_MAN - 1],
         estado:          String(data[i][COL_ESTADO - 1] || ''),
         alumno:          data[i][COL_ALUMNO - 1],
+        pago:            data[i][COL_PAGO - 1],
+        monto:           data[i][COL_MONTO - 1],
         fechaAsignacion: data[i][COL_FECHA_ASIG - 1] ? Utilities.formatDate(
                            new Date(data[i][COL_FECHA_ASIG - 1]),
                            Session.getScriptTimeZone(), 'dd/MM/yyyy') : ''
@@ -345,6 +364,7 @@ function accionSolicitarGarantia(params, sheet) {
       var row = i + 1;
       sheet.getRange(row, COL_ESTADO).setValue('Garantia');
       sheet.getRange(row, COL_ESTADO_PORTAL).setValue('Garantia');
+      sheet.getRange(row, COL_PAGO).setValue('Garantía');
       var urlEvidencia = '';
       if (evidencia && evidencia.length > 100) {
         urlEvidencia = guardarComprobanteEnDrive(evidencia, 'garantia_' + id + '_' + Date.now());

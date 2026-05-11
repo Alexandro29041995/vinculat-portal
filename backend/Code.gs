@@ -104,6 +104,7 @@ var COL_REF_PAGO      = 28;
 var COL_COMPROBANTE   = 29;
 var COL_TEL_ALUMNO    = 30;
 var COL_MONTO         = 31;
+var COL_CLABE         = 32;
 
 
 function enviarAlertaVIP(e) {
@@ -147,6 +148,7 @@ function onEdit(e) {
     sheet.getRange(row, COL_REF_PAGO).clearContent();
     sheet.getRange(row, COL_COMPROBANTE).clearContent();
     sheet.getRange(row, COL_TEL_ALUMNO).clearContent();
+    sheet.getRange(row, COL_CLABE).clearContent();
   }
 }
 
@@ -273,6 +275,7 @@ function accionRegistrarSolicitud(params, sheet) {
   var id        = params.id;
   var alumno    = params.alumno      || '';
   var telAlumno = params.telAlumno   || '';
+  var clabe     = params.clabe       || '';
   var ref       = params.ref         || '';
   var monto     = params.monto       || '';
   var compB64   = params.comprobante || '';
@@ -297,6 +300,7 @@ function accionRegistrarSolicitud(params, sheet) {
       sheet.getRange(row, COL_ESTADO_PORTAL).setValue('Pago enviado');
       sheet.getRange(row, COL_ALUMNO).setValue(alumno);
       sheet.getRange(row, COL_TEL_ALUMNO).setValue(telAlumno);
+      sheet.getRange(row, COL_CLABE).setValue(clabe);
       sheet.getRange(row, COL_FECHA_ASIG).setValue(new Date());
       sheet.getRange(row, COL_PAGO).setValue('Pagado');
       sheet.getRange(row, COL_REF_PAGO).setValue(ref);
@@ -308,7 +312,7 @@ function accionRegistrarSolicitud(params, sheet) {
       }
       var tratamiento = data[i][COL_TRATAMIENTO - 1] || '';
       enviarCorreoSeguro('Pago pendiente: ' + ref,
-        'Nuevo comprobante recibido!\n\nAlumno: ' + alumno + '\nTel: ' + telAlumno +
+        'Nuevo comprobante recibido!\n\nAlumno: ' + alumno + '\nTel: ' + telAlumno + '\nCLABE: ' + clabe +
         '\nRef: ' + ref + '\nMonto: ' + monto + '\nTratamiento: ' + tratamiento +
         '\nComprobante: ' + (urlComprobante || '(no guardado)') +
         '\n\nEntra al panel admin para validar.');

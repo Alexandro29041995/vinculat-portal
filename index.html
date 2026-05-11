@@ -2195,7 +2195,7 @@ Si sigue interesado/a en recibir atención, por favor, vuelva a llenar el formul
     <div id="paso2" style="display:none">
       <div class="step-indicator"><div class="step done"></div><div class="step active"></div><div class="step"></div></div>
       <div class="modal-title">Realiza tu pago</div>
-      <div class="modal-subtitle">Transfiere el monto exacto con esta referencia</div>
+      <div class="modal-subtitle">Te enviaremos los datos bancarios por WhatsApp</div>
 
       <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:12px;padding:12px;margin-bottom:16px;font-size:12px;color:#FDA29B;line-height:1.6;">
         <strong style="color:#FECACA;">⚠️ Términos de garantía:</strong><br>
@@ -2203,11 +2203,13 @@ Si sigue interesado/a en recibir atención, por favor, vuelva a llenar el formul
         • Si el prospecto no asiste o no responde, tu garantía cubre <strong>reposición de prospecto</strong> de valor equivalente (endodoncia u otro tratamiento disponible)
       </div>
 
-      <div class="pago-box"><div class="pago-label">Monto</div><div class="pago-monto" id="pagoMonto">$130</div></div>
-      <div class="pago-box"><div class="pago-label">Titular de la cuenta</div><div class="pago-value">Vinculat Odonto</div></div>
-      <div class="pago-box"><div class="pago-label">Banco</div><div class="pago-value">Spin by STP</div></div>
-      <div class="pago-box"><div class="pago-label">CLABE interbancaria</div><div class="pago-value">728969000084218503</div><button class="copy-btn" onclick="copiar('728969000084218503')">📋 Copiar</button></div>
+      <div class="pago-box"><div class="pago-label">Monto a pagar</div><div class="pago-monto" id="pagoMonto">$130</div></div>
       <div class="pago-box"><div class="pago-label">⚠️ Concepto obligatorio</div><div class="pago-ref" id="pagoRef">VIN-000</div><button class="copy-btn" onclick="copiar(document.getElementById('pagoRef').innerText)">📋 Copiar</button></div>
+
+      <div style="background:rgba(37,99,235,0.08);border:1px solid rgba(37,99,235,0.25);border-radius:12px;padding:14px;margin-bottom:16px;font-size:12px;color:#CBD5E1;line-height:1.8;">
+        📱 <strong style="color:white;">Revisa tu WhatsApp</strong> — Te enviaremos los datos bancarios de Vinculat en un mensaje privado para que hagas la transferencia con seguridad.
+      </div>
+
       <button class="btn-solicitar-confirm" onclick="irPaso3()">Ya pagué, subir comprobante →</button>
     </div>
 

@@ -68,7 +68,7 @@ function SPREADSHEET_ID()      { return getProp('SPREADSHEET_ID'); }
 function EMAIL_ADMIN()         { return getProp('EMAIL_ADMIN'); }
 function FOLDER_COMPROBANTES() { return getProp('FOLDER_COMPROBANTES'); }
 function FOLDER_FOTOS()        { return getProp('FOLDER_FOTOS'); }
-function NIP_ADMIN()           { return getProp('NIP_ADMIN'); }
+function NIP_ADMIN()           { return getProp('NIP_ADMIN'); } // Script Property: ej. 1234
 
 function validarNIP(nipIngresado) {
   var nipCorrecto = NIP_ADMIN();

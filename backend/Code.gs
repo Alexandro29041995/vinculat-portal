@@ -153,10 +153,10 @@ function onEdit(e) {
 
 
 function doGet(e) {
-  var sheet  = SpreadsheetApp.openById(SPREADSHEET_ID()).getSheetByName(SHEET_NAME);
   var accion = e.parameter.accion || '';
   var nip    = e.parameter.nip || '';
   try {
+    var sheet  = SpreadsheetApp.openById(SPREADSHEET_ID()).getSheetByName(SHEET_NAME);
     if (accion === 'cambiarEstado') {
       validarNIP(nip);
       return accionCambiarEstado(e.parameter, sheet);
@@ -188,7 +188,6 @@ function doGet(e) {
 
 
 function doPost(e) {
-  var sheet    = SpreadsheetApp.openById(SPREADSHEET_ID()).getSheetByName(SHEET_NAME);
   var postData = e.postData ? e.postData.contents : '';
   var params   = {};
   Logger.log('=== doPost recibido ===');
@@ -198,6 +197,7 @@ function doPost(e) {
     return recibirWebhookJotForm(e.parameter, e.parameters || {});
   }
   try {
+    var sheet = SpreadsheetApp.openById(SPREADSHEET_ID()).getSheetByName(SHEET_NAME);
     params = JSON.parse(postData);
     Logger.log('JSON parseado OK. Claves: ' + Object.keys(params).join(', '));
     if (params.formID || params.submissionID)  return recibirWebhookJotForm(params);
@@ -206,10 +206,10 @@ function doPost(e) {
     if (params.accion === 'solicitarGarantia')        return accionSolicitarGarantia(params, sheet);
     return manejarPostPortal(params, sheet);
   } catch(err) {
-    Logger.log('Error parseando JSON: ' + err.message);
+    Logger.log('Error en doPost: ' + err.message);
     Logger.log('Primeros 500 chars del body: ' + postData.substring(0, 500));
+    return jsonOk({ ok: false, error: err.message });
   }
-  return jsonOk({ ok: false, error: 'Solicitud POST no reconocida.' });
 }
 
 

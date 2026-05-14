@@ -2148,23 +2148,22 @@ Si sigue interesado/a en recibir atención, por favor, vuelva a llenar el formul
       return;
     }
     try {
-      // Registrar la solicitud del prospecto nuevo usando la misma
-      // acción que los pagos normales — así el comprobante sube al Drive
-      // y el admin lo ve en la sección de Pagos.
-      // El tag [GARANTÍA:tel:numero] lleva el teléfono del prospecto malo
-      // para que el admin pueda enviarle el mensaje de seguimiento y
-      // cambiarle el estado a "No respondio".
       const ref = 'GAR-' + String(garantiaProspectoId).padStart(3, '0');
       const payload = JSON.stringify({
-        accion:      'registrarSolicitud',
+        accion:      'solicitarGarantia',
         id:          garantiaProspectoId,
-        alumno:      garantiaNombreAlumno + ' [GARANTÍA:tel:' + garantiaTelMalo + ']',
+        alumno:      garantiaNombreAlumno + ' [tel:' + garantiaTelMalo + ']',
         telAlumno:   garantiaTelefonoAlumno,
-        ref:         ref,
-        monto:       '🔄 GARANTÍA',
-        comprobante: garantiaEvidenciaB64
+        evidencia:   garantiaEvidenciaB64
       });
-      await fetch(API_URL, { method: 'POST', body: payload });
+      const res = await fetch(API_URL, { method: 'POST', body: payload });
+      const json = await res.json();
+      if (!json.ok) {
+        btn.disabled = false;
+        txt.textContent = 'Enviar solicitud de garantía';
+        alert('❌ ' + (json.error || 'Error al enviar la solicitud'));
+        return;
+      }
 
       document.getElementById('gPaso2').style.display = 'none';
       document.getElementById('gPasoExito').style.display = 'block';
@@ -2172,7 +2171,7 @@ Si sigue interesado/a en recibir atención, por favor, vuelva a llenar el formul
     } catch(e) {
       btn.disabled = false;
       txt.textContent = 'Enviar solicitud de garantía';
-      alert('Error al enviar. Intenta de nuevo.');
+      alert('❌ Error al enviar. Intenta de nuevo.\n\nDetalle: ' + e.message);
     }
   }
 </script>
